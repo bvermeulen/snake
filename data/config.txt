@@ -1,7 +1,7 @@
 pattern file   : data/savefile.txt
 frames/second  : 15
-cells x        : 100
-cells y        : 50
-cell dim x     : 12
-cell dim y     : 12
+cells x        : 50
+cells y        : 30
+cell dim x     : 20
+cell dim y     : 20
 
