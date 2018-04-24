@@ -87,8 +87,8 @@ class SnakeSetup:
         self.a_br = (self.a_w_o[0] + self.a_w_x, self.a_w_o[1] + self.a_w_y)
         self.a_bl = (self.a_w_o[0], self.a_w_o[1] + self.a_w_y)
 
-        self.m_dim_x = 5
-        self.m_dim_y = 5
+        self.m_dim_x = 2
+        self.m_dim_y = 2
         self.m_w_x = self.cells_x * self.m_dim_x
         self.m_w_y = self.cells_y * self.m_dim_y
         status_y   = max(STATUS_Y, self.m_w_y)
@@ -114,13 +114,24 @@ class SnakeSetup:
         # set some other parameter
         self.snake_length = 10 # this is the maximum snake length
         self.wall_v = []
-        self.wall_v.append([(int(0.05*self.cells_x), int(0.05*self.cells_y)), \
-                            (int(0.05*self.cells_x), int(0.95*self.cells_y)), \
-                            (int( 0.8*self.cells_x), int(0.95*self.cells_y)), \
-                            (int( 0.8*self.cells_x), int( 0.4*self.cells_y))])
-        self.wall_v.append([(int( 0.3*self.cells_x), int( 0.3*self.cells_y)), \
-                            (int( 0.6*self.cells_x), int( 0.3*self.cells_y))])
+        self.wall_v.append([(int(0.10*self.cells_x), int(0.10*self.cells_y)), \
+                            (int(0.10*self.cells_x), int(0.90*self.cells_y)), \
+                            (int(0.80*self.cells_x), int(0.90*self.cells_y)), \
+                            (int(0.80*self.cells_x), int(0.40*self.cells_y))])
+        self.wall_v.append([(int(0.25*self.cells_x), int(0.25*self.cells_y)), \
+                            (int(0.65*self.cells_x), int(0.25*self.cells_y))])
         self.brick_size = (int(0.8 * self.cell_dim_x), int(0.8 * self.cell_dim_y))
+
+        # setup view_field
+        self.view_field = []
+        self.view_field.append((( 1, 0), ( 1, 1), ( 1,-1), ( 2, 0), ( 2, 1), ( 2,-1)))  # -> E
+        self.view_field.append((( 1, 1), ( 1, 0), ( 0, 1), ( 2, 2), ( 2, 1), ( 1, 2)))  # -> SE
+        self.view_field.append((( 0, 1), (-1, 1), ( 1, 1), ( 0, 2), (-1, 2), ( 1, 2)))  # -> S
+        self.view_field.append(((-1, 1), ( 0, 1), (-1, 0), (-2, 2), (-1, 2), (-2, 1)))  # -> SW
+        self.view_field.append(((-1, 0), (-1, 1), (-1,-1), (-2, 0), (-2, 1), (-2,-1)))  # -> W
+        self.view_field.append(((-1,-1), (-1, 0), ( 0,-1), (-2,-2), (-2,-1), (-1,-2)))  # -> NW
+        self.view_field.append((( 0,-1), ( 1,-1), (-1,-1), ( 0,-2), ( 1,-2), (-1,-2)))  # -> N
+        self.view_field.append((( 1,-1), ( 0,-1), ( 1, 0), ( 2,-2), ( 1,-2), ( 2,-1)))  # -> NE
 
     def __repr__(self):
         ''' method to represent the contents of this class
