@@ -38,6 +38,7 @@ from snake_tk_conf import BLACK, WHITE, RED, GREY, YELLOW, BLUE, ORANGE, LWIDTH,
 '''
 setup = SnakeSetup()
 snake_number = 0
+snake = []
 
 class Control:
     ''' control class with following functions:
@@ -75,7 +76,7 @@ class Control:
             self.pause = not self.pause
 
         elif event.char == 'c':          # c - clear screen and pause
-            pause = True
+            self.pause = True
             reset_snakes()
 
         elif event.keysym == 'Left':     # LEFT arrow - move left
@@ -303,7 +304,7 @@ class WallObject:
             pos_x = int(setup.a_w_o[0] + self.brick[i][0]*setup.cell_dim_x)
             pos_y = int(setup.a_w_o[1] + self.brick[i][1]*setup.cell_dim_y)
             aw.create_rectangle( pos_x, pos_y, pos_x + setup.brick_size[0], pos_y + setup.brick_size[1], \
-                                 fill = hex_color(self.color) )
+                                 fill = hex_color(self.color), width = 0 )
 
     def __repr__(self):
         ''' method to represent the contents of this class
@@ -353,7 +354,8 @@ def plot_grid_walls(aw, border_color):
     ''' draw action window border - there are two color (blue and organge)
         and the walls
     '''
-    aw.create_rectangle( setup.r_action_window, outline = hex_color(border_color), fill = 'black')
+    aw.create_rectangle( setup.r_action_window, outline = hex_color(border_color), \
+                         fill = 'black', width = LWIDTH)
     for i in range(len(wall)):
         wall[i].plot_wall(aw)
 
@@ -461,10 +463,9 @@ def reset_snakes():
     ''' delete all snakes and reset the variables snake_number and snake
     '''
     global snake_number, snake # these variables are global throughout this module
-
-    if snake_number >= 0:
-        for i in range(snake_number):
-            delete_snake(i)
+    
+    while snake != []:
+            delete_snake(0)
 
     snake_number = 0
     snake = []
