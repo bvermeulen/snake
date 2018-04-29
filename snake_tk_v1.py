@@ -12,14 +12,11 @@
         bruno_vermeulen2001@yahoo.com           
 '''
 import sys
-import tkinter
 from time import time
-from tkinter import Tk, Canvas, BOTH, YES, Label
-from PIL import Image, ImageTk
 
 import snake_tk_mod_v1
 from snake_tk_mod_v1 import (SnakeObject, WallObject, Cell, Control, plot_grid_walls, init_walls, init_cells, mouse_pressed, 
-                             move_randomly, reset_snakes, display_text, plot_snakes, plot_monitor, plot_status,
+                             move_randomly, reset_snakes, display_text, plot_snakes, plot_monitor, plot_status, show_vision,
                              randomvector, hex_color
                             )
 from snake_tk_conf import SnakeSetup
@@ -27,19 +24,10 @@ from snake_tk_conf import SnakeSetup
 def main():
     ''' Main program of snake
     '''
-    global setup, debug_stats # set to global to have access at interrupt
+    global setup, cntrl, debug_stats # set to global to have access at interrupt
     ''' initialise the global snake set up paramaters
     '''
-
-    setup = SnakeSetup()
-    print(repr(setup))
-
-    root = Tk()
-    root.title("Snakes ...")
-    root.geometry(f"{setup.main_x}x{setup.main_y}")
-    root.configure(background = 'white')
-
-    setup = SnakeSetup()
+    setup = SnakeSetup(set_window = True)
     print(repr(setup))
 
     ''' initialise the local variables
@@ -49,62 +37,53 @@ def main():
     init_walls()
     debug_stats = [0, 0, 0, 0]
 
-    aw = Canvas(root, width = setup.a_w_x, height = setup.a_w_y, bg = 'grey')
-    aw.pack(fill = BOTH, expand = YES)
     cntrl = Control()
 
-    root.bind_all('<Key>', cntrl.key_action)
-    root.bind_all( "<Button-1>", cntrl.mouse_action)
-    plot_monitor(aw)
-#   plot_status(aw, cntrl.pause)
-    display_text(aw, 0)
+    setup.root.bind_all('<Key>', cntrl.key_action)
+    setup.root.bind_all( "<Button-1>", cntrl.mouse_action)
+    setup.root.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
 
     '''run indefinetaly while run is true
     '''
-    start = time()
-
+    start_time = time()
     while cntrl.run:
         ''' when program is paused you can create new snakes or delete existing ones by clicking the mouse on the action window
             if the program is not paused the snakes move around randomly
         '''
         if cntrl.pause:
-            ''' set status to pause
+            ''' wait on user input 
             '''
-            SMB = ImageTk.PhotoImage(setup.pause_png)
-            label = Label(aw, image = SMB, bg = 'grey')
-            label.place(x = setup.r_status_window[0] , y = setup.r_status_window[1])
+            pass
 
         else:
-            ''' set status to run
-            '''
-            SMB = ImageTk.PhotoImage(setup.run_png)
-            label = Label(aw, image = SMB, bg = 'grey')
-            label.place(x = setup.r_status_window[0] , y = setup.r_status_window[1])
-
             ''' move all the snakes randomly snakes randomly
             '''
             debug_stats = move_randomly(debug_stats)
-#           print(debug_stats)
         
         ''' clear screen, plot grid, display walls and snakes
         '''
-#       plot_status(aw, cntrl.pause)
-        plot_grid_walls(aw, cntrl.bcolor)
-        plot_snakes(aw)
-        plot_monitor(aw)
-        display_text(aw, 1000 * (time()- start))
+        plot_status(setup.label_SMB, cntrl.pause)
+        plot_grid_walls(setup.aw, cntrl.bcolor)
+        plot_snakes(setup.aw)
+        show_vision(setup.aw, cntrl.snake_select)
+        display_text(setup.aw, 1000 * (time()- start_time))
     
         ''' update the screen and display at rate fps
         '''
-        root.update()
-#       root.after(int(1000/setup.fps))
-        aw.delete("all")
+        if cntrl.monitor:
+            plot_monitor(setup.aw)
 
-    root.destroy()
+        else:
+            setup.root.after(int(1000/setup.fps))
+
+        setup.root.update()
+        setup.aw.delete("all")
+
+    setup.root.destroy()
     sys.exit
     print('debug_stats:',debug_stats)
 
-    return
+    return setup, cntrl, debug_stats
 
 if __name__ == '__main__':
-    main() 
+    setup, cntrldebug, debug_stats = main() 

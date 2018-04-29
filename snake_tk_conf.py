@@ -8,6 +8,7 @@ import re
 import sys
 import os
 from PIL import Image, ImageTk
+from tkinter import Tk, Canvas, Label, BOTH, YES
 
 ''' set the constants
 '''
@@ -18,6 +19,7 @@ ORANGE      = (255, 100, 0)
 RED         = (255, 0, 0)
 YELLOW      = (255, 255, 0)
 GREY        = (128, 128, 128)
+GREEN       = (  0, 128, 0)
 PADDING     = 5
 LWIDTH      = 1
 STATUS_X    = 60
@@ -55,9 +57,10 @@ class SnakeSetup:
     ''' Setup of variables environment for the program
         Input are the parameters from the configuration file
     '''
-    def __init__(self):
+    def __init__(self, set_window = False):
         ''' set the parameters for windows, font, time
         '''
+        self.set_window = set_window
 
         # read the configuration file
         _pattern_file, _fps, _cells_x, _cells_y, _cell_dim_x, _cell_dim_y = read_config()
@@ -72,31 +75,60 @@ class SnakeSetup:
  
         # set window boundaries - abbrevations stand for: a_ [action], m_ [monitor], s_ [status]
         self.a_w_o = (PADDING , PADDING )
-        self.a_w_x = self.cells_x * self.cell_dim_x 
-        self.a_w_y = self.cells_y * self.cell_dim_y 
+        a_w_x = self.cells_x * self.cell_dim_x 
+        a_w_y = self.cells_y * self.cell_dim_y 
 
-        self.s_w_o            = (self.a_w_o[0] +self.a_w_x - STATUS_X, self.a_w_o[1] + self.a_w_y + PADDING)
-        self.r_action_window  = (self.a_w_o[0], self.a_w_o[1], self.a_w_o[0] + self.a_w_x, self.a_w_o[1] + self.a_w_y)
-        self.r_status_window  = (self.s_w_o[0], self.s_w_o[1])
-        self.r_text_window    = (self.a_w_o[0], self.a_w_o[1] + self.a_w_y + PADDING)
+        s_w_o                 = (self.a_w_o[0] + a_w_x - STATUS_X, self.a_w_o[1] + a_w_y + PADDING)
+        self.r_action_window  = (self.a_w_o[0], self.a_w_o[1], self.a_w_o[0] + a_w_x, self.a_w_o[1] + a_w_y)
+        self.r_status_window  = (s_w_o[0], s_w_o[1])
+        self.r_text_window    = (self.a_w_o[0], self.a_w_o[1] + a_w_y + PADDING)
         self.m_dim_x = 2
         self.m_dim_y = 2
-        self.m_w_x = self.cells_x * self.m_dim_x
-        self.m_w_y = self.cells_y * self.m_dim_y
-        status_y   = max(STATUS_Y, self.m_w_y)
-        self.m_w_o = (self.s_w_o[0] - PADDING - self.m_w_x, \
-                      self.s_w_o[1] ) 
+        m_w_x = self.cells_x * self.m_dim_x
+        m_w_y = self.cells_y * self.m_dim_y
+        status_y   = max(STATUS_Y, m_w_y)
+        self.m_w_o = (s_w_o[0] - PADDING - m_w_x, \
+                      s_w_o[1] ) 
 
-        self.text_x = self.a_w_x - STATUS_X - self.m_w_x - 2 *PADDING
+        v_dim_x = 30
+        v_dim_y = 30 
+        v_w_o = (self.m_w_o[0] - 3 * (PADDING + v_dim_x), \
+                      self.m_w_o[1] )
+        self.r_v_w = []
+        self.r_v_w.append((v_w_o[0], v_w_o[1], \
+                           v_w_o[0] + v_dim_x, v_w_o[1] + v_dim_y))
 
-        self.main_x = PADDING * 2 + self.a_w_x
-        self.main_y = PADDING * 3 + self.a_w_y + status_y
+        self.r_v_w.append((self.r_v_w[0][0] + PADDING + v_dim_x, v_w_o[1], \
+                           self.r_v_w[0][0] + PADDING + 2 * v_dim_x, v_w_o[1] + v_dim_y))
+        
+        self.r_v_w.append((self.r_v_w[1][0] + PADDING + v_dim_x, v_w_o[1], \
+                           self.r_v_w[1][0] + PADDING + 2 * v_dim_x, v_w_o[1] + v_dim_y))
 
-        # set icons for pause and run
-        self.pause_png = Image.open('data/Pause.png')
-        self.run_png = Image.open('data/Triangle.png')
+        self.text_x = a_w_x - STATUS_X - m_w_x - 2 *PADDING - 3 * (v_dim_x + PADDING)
 
-        # set some other parameter
+        main_x = PADDING * 2 + a_w_x
+        main_y = PADDING * 3 + a_w_y + status_y
+
+        # set windows and root parameters; only do this once controlled by set_window
+        if self.set_window:
+            self.root = Tk()
+            self.root.title("Snakes ...")
+            self.root.geometry(f"{main_x}x{main_y}")
+            self.root.configure(background = 'white')
+
+            self.aw = Canvas(self.root, width = a_w_x, height = a_w_y, bg = 'grey')
+            self.aw.pack(fill = BOTH, expand = YES)
+            
+            self.label_SMB = []
+            pause_SMB = ImageTk.PhotoImage(file = 'data/Pause.png')
+            self.label_SMB.append(Label(self.aw, image = pause_SMB, bg = 'grey'))
+            self.label_SMB[0].image = pause_SMB
+
+            run_SMB = ImageTk.PhotoImage(file = 'data/Triangle.png')
+            self.label_SMB.append(Label(self.aw, image = run_SMB, bg = 'grey'))
+            self.label_SMB[1].image = run_SMB
+
+        # set some other parameters
         self.snake_length = 10 # this is the maximum snake length
         self.wall_v = []
         self.wall_v.append([(int(0.10*self.cells_x), int(0.10*self.cells_y)), \
@@ -123,9 +155,6 @@ class SnakeSetup:
         ''' method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k,v in self.__dict__.items()) 
-        s = ('{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
-
-
-
 

@@ -16,8 +16,9 @@
         - plot_snakes
         - reset_snakes
         - plot_monitor
-        - plot_status - not working to be checked
+        - plot_status 
         - display_text
+        - show_vision
         - random_vector
         - eye
         - hex_color
@@ -32,11 +33,11 @@ import random
 from tkinter import Label
 from PIL import Image, ImageTk
 
-from snake_tk_conf import BLACK, WHITE, RED, GREY, YELLOW, BLUE, ORANGE, LWIDTH, read_config, SnakeSetup
+from snake_tk_conf import BLACK, WHITE, RED, GREY, YELLOW, BLUE, ORANGE, GREEN, LWIDTH, read_config, SnakeSetup
 
 ''' initialise the configuration paramaters
 '''
-setup = SnakeSetup()
+setup = SnakeSetup() # window setup is default False
 snake_number = 0
 snake = []
 
@@ -47,6 +48,8 @@ class Control:
         o           - change border color to orange
         Space       - toggle between pause and run
         c           - clear all snakes
+        m           - toggle between display and omit monitor
+        s           - select snake - toggle through
         Left arrow  - not yet implemented
         Right arrow - not yet implemented
 
@@ -58,11 +61,14 @@ class Control:
         self.pause = True
         self.left = False
         self.right = False
+        self.monitor = True
+        self.snake_select = 0
         self.bcolor = BLUE
 
     def key_action(self, event):
         ''' function to determine action on key events
         '''
+#       print('event: ', event.keysym, event.char)
         if event.keysym == 'Escape':     # stop running when Quit event type is triggered
             self.run = False
 
@@ -77,7 +83,20 @@ class Control:
 
         elif event.char == 'c':          # c - clear screen and pause
             self.pause = True
+            self.snake_select = 0
             reset_snakes()
+
+        elif event.char == 'm':          # m - change monitor status
+            self.monitor = not self.monitor
+
+        elif event.char == 's':          # s - select a snake
+            if self.snake_select in range(1, snake_number + 1): # normal switching in selection
+                snake[self.snake_select - 1].color = YELLOW
+                
+            self.snake_select = (self.snake_select + 1) % (snake_number + 1)
+
+            if self.snake_select > 0 and self.snake_select <= snake_number:
+                snake[self.snake_select - 1].color = GREEN
 
         elif event.keysym == 'Left':     # LEFT arrow - move left
             self.left = True
@@ -88,17 +107,26 @@ class Control:
     def mouse_action(self, event):
         ''' if event is mouse clicked then determine the location through cell indices
         '''
+        m_pos = (99999, 99999)
         if self.pause: 
-            m_pos = [int((event.x - setup.a_w_o[0]) / setup.cell_dim_x), \
-                     int((event.y - setup.a_w_o[1])/ setup.cell_dim_y)]
+            m_pos = (int((event.x - setup.a_w_o[0]) / setup.cell_dim_x), \
+                     int((event.y - setup.a_w_o[1])/ setup.cell_dim_y))
             
-            mouse_pressed(m_pos)
+        if mouse_pressed(m_pos):
+            for i in range(1, snake_number + 1):
+                snake[i-1].color = YELLOW
+            self.snake_select = 0
+
+    def exit_program(self):
+        ''' exit program on pressing the X (close window)
+        '''
+        self.run = False
 
     def __repr__(self):
         ''' method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k,v in self.__dict__.items()) 
-        s = ('{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
         
 class SnakeObject:
@@ -108,6 +136,7 @@ class SnakeObject:
         - move_left()
         - move_right()
         - plot_snake()
+        - view() out vision
         - __repr__ 
     '''
     def __init__(self, pos, vect, length, snake_color):
@@ -267,7 +296,7 @@ class SnakeObject:
         ''' method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k,v in self.__dict__.items()) 
-        s = ('{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
 
 class WallObject:
@@ -310,7 +339,7 @@ class WallObject:
         ''' method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k,v in self.__dict__.items()) 
-        s = ('{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
 
 class Cell:
@@ -328,13 +357,13 @@ class Cell:
         ''' method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k,v in self.__dict__.items()) 
-        s = ('{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
 
 def init_walls():
     ''' initialise the wall objects
     '''
-    global wall, pause_png, run_png
+    global wall
     wall = []
     wall.append(WallObject(setup.wall_v[0], GREY))
     wall.append(WallObject(setup.wall_v[1], ORANGE))
@@ -365,6 +394,7 @@ def mouse_pressed(grid):
     '''
     global snake_number # explicitly tell the function to use the global variable snake_number!
     create = True
+    mouse_action_done = False
 
     if grid[0] < setup.cells_x and grid[0] >= 0 and grid[1] < setup.cells_y and grid[1] >= 0:
         i = 0
@@ -384,6 +414,10 @@ def mouse_pressed(grid):
             snake.append(SnakeObject(grid, vector, length, YELLOW))
             snake_number += 1
 
+        mouse_action_done = True
+
+    return mouse_action_done
+        
 def move_randomly(debug_stats):
     ''' move the snakes randomly around but avoid the wall
     '''
@@ -487,21 +521,50 @@ def plot_monitor(aw):
             aw.create_rectangle( cell[i][j].x, cell[i][j].y, cell[i][j].x + setup.m_dim_x, \
                                  cell[i][j].y + setup.m_dim_y, fill = hex_color(color), width = 0 )
 
-def plot_status(aw, pause_status):
+def plot_status(label_SMB, pause_status):
     ''' display status pause or run
-        not working as yet in module
     '''
-    pass
-    
+    if pause_status == True:
+       label_SMB[0].lift()
+       label_SMB[0].place(x = setup.r_status_window[0], y = setup.r_status_window[1])
+
+    else:
+       label_SMB[1].lift()
+       label_SMB[1].place(x = setup.r_status_window[0], y = setup.r_status_window[1])
+
 def display_text(aw, t):
     ''' display number snakes and time passed in seconds in status window left	
     '''
     # display text only once a second
-    if t%1000 < 200:
+    if t%1000 < 100:
         text ='Number of snakes: ' + str(int(snake_number)) + ' and elapsed time is ' + str(int(t/1000)) + ' seconds.'
         label = Label(aw, text=text, wraplength = setup.text_x, bg = 'grey', font = setup.myfont)
-#       label = Label(aw, text=text, wraplength = setup.text_x, bg = 'grey')
         label.place(x = setup.r_text_window[0], y = setup.r_text_window[1])
+
+def show_vision(aw, snake_nr):
+    ''' show the vision of snake[snake_nr]
+    '''
+    if snake_nr > 0 and snake_nr <= snake_number:
+        vision = snake[snake_nr-1].view()
+            
+    else:
+        vision = (0, 0, 0)
+
+    delta_intensity = 255 / 6 # values typically range between 0 and 6
+
+    l_v = max( int((6 - vision[0]) * delta_intensity), 0 )
+    color = (l_v, l_v, l_v)
+    aw.create_rectangle(setup.r_v_w[0], fill = hex_color(color))
+
+    f_v = max( int((6 - vision[1]) * delta_intensity), 0 )
+    color = (f_v, f_v, f_v)
+    aw.create_rectangle(setup.r_v_w[1], fill = hex_color(color))
+
+    r_v = max( int((6 - vision[2]) * delta_intensity), 0 )
+    color = (r_v, r_v, r_v)
+    aw.create_rectangle(setup.r_v_w[2], fill = hex_color(color))
+
+#   print('color: {:02x}, {:02x}, {:02x}'.format(l_v, f_v, r_v))
 
 def randomvector():
     ''' calculate a random vector ([-1,0-1],[-1,0,-1]) but not (0,0))
