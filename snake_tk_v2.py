@@ -14,6 +14,7 @@
 import sys
 from time import time
 
+import snake_tk_tools_v2
 from snake_tk_tools_v2 import SnakeSetup
 
 import snake_tk_mod_v2
@@ -22,6 +23,7 @@ from snake_tk_mod_v2 import (plot_grid_walls, init_walls, init_cells,
                              plot_monitor, plot_status, show_vision,
                              reset_snakes   
                             )
+import snake_tk_control_v2
 from snake_tk_control_v2 import Control
 
 
