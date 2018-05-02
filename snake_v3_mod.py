@@ -24,12 +24,8 @@
         Author: Bruno Vermeulen                 
         bruno_vermeulen2001@yahoo.com           
 '''
-import re
-import sys 
-import os
 import random
 from tkinter import Label
-from PIL import Image, ImageTk
 
 from snake_v3_tools import (BLACK, WHITE, RED, GREY, YELLOW, BLUE, ORANGE, GREEN, LWIDTH, 
                             SnakeSetup, randomvector, hex_color
