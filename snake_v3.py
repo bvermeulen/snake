@@ -12,128 +12,92 @@
         bruno_vermeulen2001@yahoo.com           
 '''
 import sys
-import random
-import pygame
-from pygame.locals import (QUIT, KEYDOWN,MOUSEBUTTONUP, 
-                           K_o, K_b, K_l, K_s, K_c, 
-                           K_ESCAPE, K_SPACE, K_LEFT, K_RIGHT)
+from time import time
 
-import snake_module_v3
-from snake_module_v3 import (SnakeObject, WallObject, Cell, plot_grid_walls, init_walls, init_cells, mouse_pressed, 
-                             move_randomly, reset_snakes, display_text, plot_snakes, reset_snakes, plot_monitor,
-                             randomvector 
+import snake_v3_tools
+from snake_v3_tools import SnakeSetup
+import snake_v3_control
+from snake_v3_control import Control
+import snake_v3_mod
+from snake_v3_mod import (plot_grid_walls, init_walls, init_cells, 
+                             move_randomly, display_text, plot_snakes, 
+                             plot_monitor, plot_status, show_vision,
+                             reset_snakes   
                             )
-import snake_configuration
-from snake_configuration import BLACK, WHITE, BLUE, GREY, ORANGE, read_config, SnakeSetup
 
 def main():
     ''' Main program of snake
     '''
-    global run, pause, Left, Right, m, wall, time, bcolor, setup# set to global to have access at interrupt
+    global setup, cntrl, debug_stats # set to global to have access at interrupt
     ''' initialise the global snake set up paramaters
     '''
-    setup = SnakeSetup()
+    setup = SnakeSetup(set_window = True)
     print(repr(setup))
 
     ''' initialise the local variables
     '''
-    run = True
-    pause = True
-    Left = False
-    Right = False
     reset_snakes()
-    m = (99999, 99999)
-    bcolor = BLUE
-    display_text(0)
     init_cells()
-    wall = init_walls()
-    plot_monitor()
+    init_walls()
+    debug_stats = [0, 0, 0, 0, 0]
+
+    cntrl = Control()
+    cntrl.buttons(setup.root)
+    setup.root.bind_all('<Key>', cntrl.key_action)
+    setup.root.bind_all( "<Button-1>", cntrl.mouse_action)
+    setup.root.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
+    setup.mroot.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
+
+    margin = 1
+    start_time = time()
 
     '''run indefinetaly while run is true
     '''
-    while run:
+    while cntrl.run:
         ''' when program is paused you can create new snakes or delete existing ones by clicking the mouse on the action window
             if the program is not paused the snakes move around randomly
         '''
-        if pause:
-            ''' update status symbol to pause
+        if cntrl.pause:
+            ''' wait on user input 
             '''
-            pygame.draw.rect(setup.screen, BLACK, pygame.Rect(setup.r_status_window), 0)
-            setup.screen.blit(setup.pause_SMB, setup.s_w_o)
-            ''' if mouse is pressed inside action window create a snake or remove it if already
-                existed
-            '''
-            m = mouse_pressed(m)
+            pass
 
         else:
-            ''' update status symbol to run
-            '''
-            pygame.draw.rect(setup.screen, BLACK, pygame.Rect(setup.r_status_window), 0)
-            setup.screen.blit(setup.run_SMB, setup.s_w_o)		
             ''' move all the snakes randomly snakes randomly
             '''
-            move_randomly()
-            m = (99999, 99999) # if program is not pause mouse pressed is disabled
+            debug_stats = move_randomly(debug_stats)
         
         ''' clear screen, plot grid, display walls and snakes
         '''
-        pygame.draw.rect(setup.screen, BLACK, pygame.Rect(setup.r_action_window), 0)    
-        plot_grid_walls(bcolor, wall)
-        plot_snakes()
-        plot_monitor()
-
-        for event in pygame.event.get():
-            ''' there are three events to be considered: QUIT (click on exit window icon), KEYDOWN, MOUSEBUTTONUP 
-            '''
-            if event.type == QUIT:            # stop running when Quit event type is triggered
-                run = False
-
-            elif event.type == KEYDOWN:
-                ''' if event is key press (KEYDOWN) then check if following option occur
-                '''
-                if event.key == K_b:          # b - change border color to blue
-                    bcolor = BLUE
-                elif event.key == K_o:        # o - change border color to orange
-                    bcolor = ORANGE
-                elif event.key == K_ESCAPE:   # Escape - leave program
-                    run = False
-                elif event.key == K_SPACE:    # Space - change pause status, pause is not pause
-                    pause = not pause
-                elif event.key == K_l:        # l - load pattern
-                    load_pattern()
-                elif event.key == K_s:        # s - save pattern, note this overwrites the file
-                    save_pattern()
-                elif event.key == K_c:        # c - clear screen and pause
-                    pause = True
-                    reset_snakes()
-                    init_cells()
-                    wall = init_walls()
-                    pygame.draw.rect(setup.screen, BLACK, pygame.Rect(setup.r_action_window), 0)
-                    plot_grid_walls(bcolor, wall)
-                elif event.key == K_LEFT:     # LEFT arrow - move left
-                    Left = True
-                elif event.key == K_RIGHT:    # RIGHT arrow - move right
-                    Right = True
-								
-            elif event.type == MOUSEBUTTONUP: 
-                ''' if event is mouse clicked then determine the location through cell indices
-                '''
-                m = pygame.mouse.get_pos()
-                m = [int((m[0]-setup.a_w_o[0])/setup.cell_dim_x),int((m[1]-setup.a_w_o[1])/setup.cell_dim_y)]
-
-        ''' update the screen and display
+        time_elapsed = int( 1000 * (time() - start_time))
+        plot_status(setup.label_SMB, cntrl.pause)
+        plot_grid_walls(setup.aw, cntrl.bcolor)
+        plot_snakes(setup.aw)
+        show_vision(setup.aw)
+        display_text(setup.aw, time_elapsed)
+    
+        ''' update the screen and display at rate fps
         '''
-        pygame.display.flip()
-        setup.fpsClock.tick(setup.fps)
-	        
-        time = pygame.time.get_ticks()
-        display_text(time)
+        if cntrl.monitor:
+            plot_monitor(setup.mw)
+            margin = 2
+        else:
+            margin = 1
+            setup.root.after(int(1000/setup.fps))
 
-    pygame.quit()
+        setup.root.update()
+        setup.mroot.update()
+        setup.aw.delete("all")
+        setup.mw.delete("all")
+        display_text(setup.aw, time_elapsed)
+
+    setup.root.destroy()
+    setup.mroot.destroy()
     sys.exit
+    debug_stats[4] = int(time_elapsed/ 1000)
+    print('debug_stats:',debug_stats)
 
-    return run, pause, Left, Right, m, wall, cell, time, bcolor, setup
+    return setup, cntrl, debug_stats
 
 if __name__ == '__main__':
-    run, pause, Left, Right, m, cell, wall, time, bcolor, setup = \
-    main() # on normal completion of program maintain the variables for inspection
+    setup, cntrl, debug_stats = main() 
