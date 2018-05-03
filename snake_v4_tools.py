@@ -228,9 +228,12 @@ def plot_grid_walls(aw, wall, border_color):
     for i in range(len(wall)):
         wall[i].plot_wall(aw)
 
-def plot_monitor(mw, cell):
+def plot_monitor(mw, cell_p):
     ''' plot the cell status in the monitor window
     '''
+    global cell
+    cell = cell_p
+
     for i in range(setup.cells_x):
         for j in range(setup.cells_y):
             if cell[i][j].content == 'empty':
@@ -272,9 +275,12 @@ def display_text(aw, t_elapsed, snakes, select):
 
 #   print('color: {:02x}, {:02x}, {:02x}'.format(l_v, f_v, r_v))
 
-def eye(head, cell, a):
+def eye(head, cell_p, a):
     ''' captures a value of the view depending on looking vector a
     '''
+    global cell
+    cell = cell_p
+
     v = 0
     for i in range(len(a)):
         if cell[(head[0] + a[i][0]) % setup.cells_x][(head[1] + a[i][1]) % setup.cells_y].content != 'empty':

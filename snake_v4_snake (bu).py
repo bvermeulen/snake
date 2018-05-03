@@ -58,12 +58,9 @@ class SnakeObject:
             print (i, vect, self.tail[i])
             vect = (vect[0] + self.vector[0], vect[1] + self.vector[1])   
 
-    def move(self, cell_p):
+    def move(self, cell):
         ''' method to move snake straight and update cell status
         '''
-        global cell
-        cell = cell_p
-
         # set the new head position and check if this is a wall
         x   = (self.head[0] + self.vector[0]) % setup.cells_x
         y   = (self.head[1] + self.vector[1]) % setup.cells_y
@@ -148,14 +145,11 @@ class SnakeObject:
            aw.create_oval(pos_x, pos_y, pos_x + setup.cell_dim_x, pos_y + setup.cell_dim_y, \
                           fill = hex_color(self.color))
       
-    def view(self, cell_p):
+    def view(self, cell):
         ''' method to obtain view looking from the head in the vector direction obtaining: Left View (LV), 
             Front View (FV) and Right View (RV) in case eye observes wall object it increases the value 
             giving a 3 component vector (LV, FV, RV)
         '''
-        global cell
-        cell = cell_p
-
         if   self.vector == ( 1, 0):
             LV = eye(self.head, cell, setup.view_field[-1 % 8])
             FV = eye(self.head, cell, setup.view_field[ 0 % 8])
@@ -201,12 +195,10 @@ class SnakeObject:
         s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
 
-def mouse_pressed(grid, cell_p):
+def mouse_pressed(grid, cell):
     ''' if mouse is pressed in the action window then create a snake and plot it, or if the snake
         already exists then delete the snake
     '''
-    global cell
-    cell = cell_p
     global snake_number # explicitly tell the function to use the global variables!
     create = True
     mouse_action_done = False
@@ -230,11 +222,9 @@ def mouse_pressed(grid, cell_p):
 
     return mouse_action_done
         
-def move_randomly(cell_p, debug_stats):
+def move_randomly(cell, debug_stats):
     ''' move the snakes randomly around but avoid the wall
     '''
-    global cell
-    cell = cell_p
     for i in range(snake_number):
         
         v = snake[i].view(cell)
@@ -289,11 +279,9 @@ def move_randomly(cell_p, debug_stats):
 
     return debug_stats
 
-def create_snake(grid, cell_p):
+def create_snake(grid, cell):
     ''' create a snake
     '''
-    global cell
-    cell = cell_p
     global snake_number
     length = random.randint(1,setup.snake_length)
     vector = randomvector()
@@ -305,11 +293,9 @@ def create_snake(grid, cell_p):
     '''
     set_snake_environment(cell, snake_number - 1, 'snake')
 
-def delete_snake(snake_index, cell_p):
+def delete_snake(snake_index, cell):
     ''' delete a snake
     '''
-    global cell
-    cell = cell_p
     global snake_number # explicitly tell the function to use the global variables!
     assert snake != [], 'there should be at least one snake to delete it'
     print('delete snake', snake_index)
@@ -322,11 +308,9 @@ def delete_snake(snake_index, cell_p):
     snake_number -= 1
     snake_selection( reset_selection = True)
 
-def set_snake_environment(cell_p, snake_index, content):
+def set_snake_environment(cell, snake_index, content):
     ''' set the snake environment for snake i
     '''
-    global cell
-    cell = cell_p
     assert content == 'snake' or content == 'empty', "only 'snake' or 'empty' is allowed"
 
     head = snake[snake_index].head
@@ -345,12 +329,9 @@ def plot_snakes(aw):
     for i in range(snake_number):
         snake[i].plot_snake(aw)
 
-def reset_snakes(cell_p):
+def reset_snakes(cell):
     ''' delete all snakes and reset the variables snake_number and snake
     '''
-    global cell
-    cell = cell_p
-
     global snake_number, snake, snake_select # these variables are global throughout this module
 
     try: 
@@ -383,12 +364,9 @@ def snake_selection( reset_selection = False ):
         if snake_select in range(1, snake_number + 1):
             snake[snake_select - 1].color = GREEN
 
-def show_snake_vision(aw, cell_p):
+def show_snake_vision(aw, cell):
     ''' show the vision of snake[snake_nr]
     '''
-    global cell
-    cell = cell_p
-
     if snake_select in range(1, snake_number + 1):
         vision = snake[snake_select-1].view(cell)
 

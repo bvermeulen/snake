@@ -26,7 +26,9 @@ class WallObject:
         - plot_wall
         - __repr__
     '''
-    def __init__(self, cell, vertices, color):
+    def __init__(self, cell_p, vertices, color):
+        global cell
+        cell = cell_p
         self.color    = color
         self.brick    = []
 
@@ -63,9 +65,11 @@ class WallObject:
         s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.format(self=self))+s
         return s
 
-def init_walls(cell):
+def init_walls(cell_p):
     ''' initialise the wall objects
     '''
+    global cell
+    cell = cell_p
     wall = []
     wall.append(WallObject(cell, setup.wall_v[0], GREY))
     wall.append(WallObject(cell, setup.wall_v[1], ORANGE))

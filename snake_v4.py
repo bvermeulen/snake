@@ -14,11 +14,11 @@
 import sys
 from time import time
 
-# import snake_v4_tools
+import snake_v4_tools
 from snake_v4_tools import ( SnakeSetup, init_cells, plot_grid_walls, 
                              plot_monitor, plot_status, display_text
                            )
-# import snake_v4_wall
+import snake_v4_wall
 from snake_v4_wall import  ( init_walls )
 
 import snake_v4_control
