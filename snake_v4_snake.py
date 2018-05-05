@@ -5,7 +5,6 @@
         - SnakeObject
 
         Functions:
-        - init_cells
         - mouse_pressed
         - move_randomly
         - create_snake
