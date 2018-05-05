@@ -47,7 +47,8 @@ class WallObject:
                     x = a_x + round(step / steps * range_x)
                     y = a_y + round(step / steps * range_y)
                     self.brick.append((int(x), int(y)))
-                    cell[int(x)][int(y)].content = 'wall'
+                    cell[x][y].content = 'wall'
+                    cell[x][y].plot = True
 
     def plot_wall(self, aw):
         '''  method to plot the wall

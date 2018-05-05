@@ -10,7 +10,7 @@
             - randomvector
             - hex_color
             - init_cells
-            - plot_grid_walls
+            - plot_environment
             - plot_monitor
             - plot_status
             - display_text
@@ -187,9 +187,10 @@ class Cell:
          - __init__
          - __repr__
     '''
-    def __init__(self, x, y, content):
+    def __init__(self, x, y, plot, content):
         self.x = x
         self.y = y
+        self.plot = plot
         self.content = content
         assert self.content in ['empty', 'wall', 'snake'], \
             "content is limited to empty, wall or snake"
@@ -215,14 +216,16 @@ def read_config():
     else:
         config_file = os.path.join("data", "config.txt")
 
-    cfile = open(config_file)
-
-    pattern_file = cfile.readline()[17:]
-    fps = int(cfile.readline()[17:])
-    cells_x = int(cfile.readline()[17:])
-    cells_y = int(cfile.readline()[17:])
-    cell_dim_x = int(cfile.readline()[17:])
-    cell_dim_y = int(cfile.readline()[17:])
+    try:
+        cfile = open(config_file)
+        pattern_file = cfile.readline()[17:]
+        fps = int(cfile.readline()[17:])
+        cells_x = int(cfile.readline()[17:])
+        cells_y = int(cfile.readline()[17:])
+        cell_dim_x = int(cfile.readline()[17:])
+        cell_dim_y = int(cfile.readline()[17:])
+    except:
+        sys.exit('Unable to read the config file ...')
 
     if len(sys.argv) == 3:
         pattern_file = sys.argv[2]
@@ -244,12 +247,12 @@ def init_cells():
     cell = [[Cell(
             int(setup.m_w_o[0] + x * setup.m_dim_x),
             int(setup.m_w_o[1] + y * setup.m_dim_y),
-            'empty') for y in range(setup.cells_y)]
+            True, 'empty') for y in range(setup.cells_y)]
             for x in range(setup.cells_x)]
     return cell
 
 
-def plot_grid_walls(aw, wall, border_color):
+def plot_environment(aw, wall, border_color):
     '''  draw action window border - there are two color (blue and organge)
          and the walls
     '''
@@ -259,7 +262,7 @@ def plot_grid_walls(aw, wall, border_color):
         wall[i].plot_wall(aw)
 
 
-def plot_monitor(mw, cell_p):
+def plot_monitor(root, mw, cell_p):
     '''  plot the cell status in the monitor window
     '''
     global cell
@@ -267,19 +270,24 @@ def plot_monitor(mw, cell_p):
 
     for i in range(setup.cells_x):
         for j in range(setup.cells_y):
-            if cell[i][j].content == 'empty':
-                color = WHITE
-            elif cell[i][j].content == 'snake':
-                color = RED
-            elif cell[i][j].content == 'wall':
-                color = BLACK
-            else:
-                assert False, "this option can not be possible, check code"
 
-            mw.create_rectangle(cell[i][j].x, cell[i][j].y,
-                                cell[i][j].x + setup.m_dim_x,
-                                cell[i][j].y + setup.m_dim_y,
-                                fill=hex_color(color), width=0)
+            if cell[i][j].plot:
+                if cell[i][j].content == 'empty':
+                    color = WHITE
+                elif cell[i][j].content == 'snake':
+                    color = RED
+                elif cell[i][j].content == 'wall':
+                    color = BLACK
+                else:
+                    assert False, "this option can not be possible, check code"
+
+                mw.create_rectangle(cell[i][j].x, cell[i][j].y,
+                                    cell[i][j].x + setup.m_dim_x,
+                                    cell[i][j].y + setup.m_dim_y,
+                                    fill=hex_color(color), width=0)
+                cell[i][j].plot = False
+
+    root.update()
 
 
 def plot_status(label_SMB, pause_status):

@@ -11,11 +11,10 @@
         Author: Bruno Vermeulen
         bruno_vermeulen2001@yahoo.com
 '''
-import sys
 from time import time
 
 import snake_v4_tools    # noqa F401 - required for debugging
-from snake_v4_tools import (SnakeSetup, init_cells, plot_grid_walls,
+from snake_v4_tools import (SnakeSetup, init_cells, plot_environment,
                             plot_monitor, plot_status, display_text)
 import snake_v4_wall     # noqa F401 - required for debugging
 from snake_v4_wall import init_walls
@@ -45,7 +44,7 @@ def main():
     reset_snakes(cell)
     debug_stats = [0, 0, 0, 0, 0]
 
-    cntrl = Control(cell)
+    cntrl = Control(setup.mw, cell)
     cntrl.buttons(setup.root)
     setup.root.bind_all('<Key>', cntrl.key_action)
     setup.root.bind_all('<Button-1>', cntrl.mouse_action)
@@ -74,7 +73,7 @@ def main():
         '''
         time_elapsed = int(1000 * (time() - start_time))
         plot_status(setup.label_SMB, cntrl.pause)
-        plot_grid_walls(setup.aw, wall, cntrl.bcolor)
+        plot_environment(setup.aw, wall, cntrl.bcolor)
         plot_snakes(setup.aw)
         show_snake_vision(setup.aw, cell)
 #       display_text(setup.aw, time_elapsed, _snake_number, _snake_select)
@@ -82,18 +81,14 @@ def main():
 
         # update the screen and display at rate fps
         if cntrl.monitor:
-            plot_monitor(setup.mw, cell)
-        else:
-            setup.root.after(int(1000/setup.fps))
+            plot_monitor(setup.mroot, setup.mw, cell)
 
+        setup.root.after(int(1000 / setup.fps))
         setup.root.update()
-        setup.mroot.update()
         setup.aw.delete("all")
-        setup.mw.delete("all")
 
     setup.root.destroy()
     setup.mroot.destroy()
-    sys.exit()
     debug_stats[4] = int(time_elapsed / 1000)
     print('debug_stats:', debug_stats)
 

@@ -81,6 +81,8 @@ class SnakeObject:
 
                 cell[self.tail[self.length - 1][0]][self.tail[self.length - 1]
                                                     [1]].content = 'empty'
+                cell[self.tail[self.length - 1][0]][self.tail[self.length - 1]
+                                                    [1]].plot = True
 
             # move up the snake towards the head, start at the end
             for i in range(self.length - 1, 0, -1):
@@ -91,6 +93,7 @@ class SnakeObject:
 
             # set the new head position
             cell[x][y].content = 'snake'
+            cell[x][y].plot = True
             move = True
 
         return move
@@ -347,12 +350,14 @@ def set_snake_environment(cell_p, snake_index, content):
     head = snake[snake_index].head
     if cell[head[0]][head[1]].content != 'wall':
         cell[head[0]][head[1]].content = content
+        cell[head[0]][head[1]].plot = True
 
     tail = snake[snake_index].tail
 
     for i in range(len(tail)):
         if cell[tail[i][0]][tail[i][1]].content != 'wall':
             cell[tail[i][0]][tail[i][1]].content = content
+            cell[tail[i][0]][tail[i][1]].plot = True
 
 
 def plot_snakes(aw):

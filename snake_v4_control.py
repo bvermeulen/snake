@@ -42,7 +42,7 @@ class Control:
          -   exit_program
          -   __repr__
     '''
-    def __init__(self, cell):
+    def __init__(self, mw, cell):
         self.run = True
         self.pause = True
         self.left = False
@@ -50,6 +50,7 @@ class Control:
         self.monitor = True
         self.bcolor = BLUE
         self.in_button = False
+        self.mw = mw
         self.cell = cell
 
     def key_action(self, event):
@@ -159,9 +160,13 @@ class Control:
         '''  Method to toggle monitor window on and off
         '''
         self.monitor = not self.monitor
+        self.mw.delete("all")
 
         if self.monitor:
             self.monitor_button.config(relief='sunken')
+            for i in range(setup.cells_x):
+                for j in range(setup.cells_y):
+                    self.cell[i][j].plot = True
 
         else:
             self.monitor_button.config(relief='raised')
