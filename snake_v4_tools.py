@@ -7,8 +7,6 @@
             - Cell
      Function:
             - read_config
-            - randomvector
-            - hex_color
             - init_cells
             - plot_environment
             - plot_monitor
@@ -16,6 +14,7 @@
             - display_text
             - eye
             - randomvector
+            - hex_color
 '''
 import re
 import sys
