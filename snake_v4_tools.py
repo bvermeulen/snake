@@ -7,6 +7,8 @@
             - Cell
      Function:
             - read_config
+            - randomvector
+            - hex_color
             - init_cells
             - plot_environment
             - plot_monitor
@@ -14,7 +16,6 @@
             - display_text
             - eye
             - randomvector
-            - hex_color
 '''
 import re
 import sys
@@ -243,10 +244,8 @@ def init_cells():
     '''  initialise the cells to capture status of the field
          Cell. cell.x and cell.y are the monitor cell positions
     '''
-    cell = [[Cell(
-            int(setup.m_w_o[0] + x * setup.m_dim_x),
-            int(setup.m_w_o[1] + y * setup.m_dim_y),
-            True, 'empty') for y in range(setup.cells_y)]
+    cell = [[Cell(x, y, True, 'empty')
+            for y in range(setup.cells_y)]
             for x in range(setup.cells_x)]
     return cell
 
@@ -262,29 +261,29 @@ def plot_environment(aw, wall, border_color):
 
 
 def plot_monitor(root, mw, cell_p):
-    '''  plot the cell status in the monitor window
-    '''
     global cell
     cell = cell_p
+    '''  note only the head and the emptied tail need to be plotted so just
+         2 per snake
+    '''
+    plot_cells = [cell[x][y] for x in range(setup.cells_x)
+                  for y in range(setup.cells_y) if cell[x][y].plot]
 
-    for i in range(setup.cells_x):
-        for j in range(setup.cells_y):
+    for plot_cell in plot_cells:
+        if plot_cell.content == 'empty':
+            color = WHITE
+        elif plot_cell.content == 'snake':
+            color = RED
+        elif plot_cell.content == 'wall':
+            color = BLACK
+        else:
+            assert False, "this option can not be possible, check code"
 
-            if cell[i][j].plot:
-                if cell[i][j].content == 'empty':
-                    color = WHITE
-                elif cell[i][j].content == 'snake':
-                    color = RED
-                elif cell[i][j].content == 'wall':
-                    color = BLACK
-                else:
-                    assert False, "this option can not be possible, check code"
-
-                mw.create_rectangle(cell[i][j].x, cell[i][j].y,
-                                    cell[i][j].x + setup.m_dim_x,
-                                    cell[i][j].y + setup.m_dim_y,
-                                    fill=hex_color(color), width=0)
-                cell[i][j].plot = False
+        x = setup.m_w_o[0] + plot_cell.x * setup.m_dim_x
+        y = setup.m_w_o[1] + plot_cell.y * setup.m_dim_y
+        mw.create_rectangle(x, y, x + setup.m_dim_x, y + setup.m_dim_y,
+                            fill=hex_color(color), width=0)
+        cell[plot_cell.x][plot_cell.y].plot = False
 
     root.update()
 
