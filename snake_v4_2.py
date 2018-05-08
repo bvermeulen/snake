@@ -30,7 +30,7 @@ from snake_v4_2_snake import (move_randomly, show_snake_vision,
 def main():
     '''  Main program of snake
     '''
-    global setup, cntrl, debug_stats, cell, wall, elapsed_time, plotlist, p, w
+    global setup, cntrl, debug_stats, cell, wall, elapsed_time, plotlist, p, vw
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
@@ -88,7 +88,7 @@ def main():
                         plotlist=plotlist)
 
         plot_status(setup.label_SMB, cntrl.pause)
-        show_snake_vision(setup.aw, cell)
+        vw = show_snake_vision(setup.aw, cell)
         display_text(setup.aw, time_elapsed, sm.snake_number, sm.snake_select)
 
         if cntrl.monitor:
@@ -97,7 +97,7 @@ def main():
         #  update the screen and display at rate fps
         setup.root.after(int(1000 / setup.fps))
         setup.root.update()
-        setup.aw.delete(*p)
+        setup.aw.delete(*p, *vw)
 
     setup.root.destroy()
     setup.mroot.destroy()

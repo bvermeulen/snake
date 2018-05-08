@@ -408,15 +408,18 @@ def show_snake_vision(aw, cell):
         vision = (0, 0, 0)
 
     delta_intensity = 255 / 6  # values typically range between 0 and 6
+    vw = []
 
     l_v = max(int((6 - vision[0]) * delta_intensity), 0)
     color = (l_v, l_v, l_v)
-    aw.create_rectangle(setup.r_v_w[0], fill=hex_color(color))
+    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=hex_color(color)))
 
     f_v = max(int((6 - vision[1]) * delta_intensity), 0)
     color = (f_v, f_v, f_v)
-    aw.create_rectangle(setup.r_v_w[1], fill=hex_color(color))
+    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=hex_color(color)))
 
     r_v = max(int((6 - vision[2]) * delta_intensity), 0)
     color = (r_v, r_v, r_v)
-    aw.create_rectangle(setup.r_v_w[2], fill=hex_color(color))
+    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=hex_color(color)))
+
+    return vw

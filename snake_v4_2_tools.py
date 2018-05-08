@@ -281,10 +281,9 @@ def plot_window(canvas, rectangle, background, border_color, plotlist):
     '''  draw  window border and background, then plot all the points in the
          plot list
     '''
-    p = []
     canvas.create_rectangle(rectangle, outline=hex_color(border_color),
                             fill=hex_color(background), width=LWIDTH)
-
+    p = []
     for plotpoint in plotlist:
         if plotpoint.shape == 'rectangle':
             p.append(canvas.create_rectangle(plotpoint.x1, plotpoint.y1,
