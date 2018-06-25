@@ -14,23 +14,23 @@
 from time import time
 
 import snake_v5_1_tools    # noqa F401 - required for debugging
-from snake_v5_1_tools import (BLACK, Setup, init_cells, plot_window,
+from snake_v5_1_tools import (BLACK, YELLOW, Setup, init_cells,
                               plot_monitor, plot_status, display_text)
 import snake_v5_1_wall     # noqa F401 - required for debugging
-from snake_v5_1_wall import init_walls, plotlist_walls
+from snake_v5_1_wall import init_walls, plot_walls
 
 import snake_v5_1_control  # noqa F401 - required for debugging
 from snake_v5_1_control import Control
 
 import snake_v5_1_snake as sm
 from snake_v5_1_snake import (move_randomly, show_snake_vision,
-                              plotlist_snakes, reset_snakes)
+                              plot_snakes, reset_snakes)
 
 
 def main():
     '''  Main program of snake
     '''
-    global setup, cntrl, debug_stats, cell, wall, elapsed_time, plotlist, p, vw
+    global setup, cntrl, debug_stats, cell, wall, elapsed_time
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
@@ -40,25 +40,18 @@ def main():
     '''  initialise the local variables
     '''
     cell = init_cells()
-    wall = init_walls(cell)
     reset_snakes(cell)
 
     debug_stats = [0, 0, 0, 0, 0]
-    cntrl = Control(setup.mw, cell)
+    cntrl = Control(setup.aw, setup.mw, cell)
     cntrl.buttons(setup.root)
-    setup.root.bind_all('<Key>', cntrl.key_action)
-    setup.root.bind_all('<Button-1>', cntrl.mouse_action)
+    setup.root.bind('<Key>', cntrl.key_action)
+    setup.aw.bind('<Button>', cntrl.mouse_click)
+    setup.aw.bind('<Double-Button>', cntrl.mouse_double_click)
     setup.root.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
     setup.mroot.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
     start_time = time()
-
-    '''  get the plotlist for wall
-    '''
-    plotlist = []
-    plotlist_walls(plotlist)
-    plot_window(canvas=setup.aw, rectangle=setup.r_action_window,
-                background=BLACK, border_color=cntrl.bcolor,
-                plotlist=plotlist)
+    wall = init_walls(cell)
 
     '''  run indefinetaly while run is true
     '''
@@ -67,45 +60,53 @@ def main():
              existing ones by clicking the mouse on the action window
              if the program is not paused the snakes move around randomly
         '''
-        if cntrl.pause:
-            '''  wait on user input
+        plot_walls(setup.aw, cntrl.bcolor, cntrl.setup)
+
+        if cntrl.setup:
+            '''  if setup wait on user input to setup the walls
             '''
             pass
 
         else:
-            '''  move all the snakes randomly snakes randomly
+            '''  otherwise handle the snake ...
             '''
-            debug_stats = move_randomly(cell, debug_stats)
+            if cntrl.pause:
+                '''  wait on user input and create/ delete snakes
+                '''
+                pass
 
-        '''  update the screens
+            else:
+                '''  move all the snakes randomly snakes randomly
+                '''
+                debug_stats = move_randomly(cell, debug_stats)
+
+            plot_snakes(setup.aw, cntrl.bcolor)
+            show_snake_vision(setup.aw, cell)
+            if sm.snake_number == 0 and not cntrl.pause:
+                cntrl.pause_status()
+
+        '''  update status and text and show the screen
         '''
         time_elapsed = int(1000 * (time() - start_time))
-        # to change color of border plot_evironment must be placed in loop
-        plotlist = []
-        plotlist_snakes(plotlist)
-        p = plot_window(canvas=setup.aw, rectangle=setup.r_action_window,
-                        background='', border_color=cntrl.bcolor,
-                        plotlist=plotlist)
-
         plot_status(setup.label_SMB, cntrl.pause)
-        vw = show_snake_vision(setup.aw, cell)
         display_text(setup.aw, time_elapsed, sm.snake_number, sm.snake_select)
 
         if cntrl.monitor:
-            plot_monitor(setup.mroot, setup.mw, cell)
+            m = plot_monitor(setup.mroot, setup.mw, cell)
 
         #  update the screen and display at rate fps
-        setup.root.after(int(1000 / setup.fps))
+        # setup.root.after(int(1000 / setup.fps))
         setup.root.update()
-        setup.aw.delete(*p, *vw)
+        setup.aw.delete("all")
+        #setup.mw.delete(*m)
 
     setup.root.destroy()
     setup.mroot.destroy()
     debug_stats[4] = int(time_elapsed / 1000)
     print('debug_stats:', debug_stats)
 
-    return setup, cntrl, debug_stats, cell, wall, time_elapsed, plotlist
+    return setup, cntrl, debug_stats, cell, wall, time_elapsed
 
 
 if __name__ == '__main__':
-    setup, cntrl, debug_stats, cell, wall, time_elapsed, plotlist = main()
+    setup, cntrl, debug_stats, cell, wall, time_elapsed = main()
