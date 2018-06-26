@@ -36,6 +36,7 @@ RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 GREY = (128, 128, 128)
 GREEN = (0, 128, 0)
+LIGHTGREY = (200, 200, 200)
 PADDING = 5
 LWIDTH = 1
 BWIDTH = 4
@@ -326,11 +327,11 @@ def plot_monitor(mroot, mw, cell):
                                 shape='rectangle'))
                 cell[i][j].plot = False
 
-    plot_window(canvas=mw, rectangle=(0, 0, 0, 0), background='',
-                border_color='', plotlist=plotlist)
+    m = plot_window(canvas=mw, rectangle=(0, 0, 0, 0), background='',
+                    border_color='', plotlist=plotlist)
 
     mroot.update()
-
+    return m
 
 def plot_status(label_SMB, pause_status):
     '''  display status pause or run

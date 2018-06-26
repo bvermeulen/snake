@@ -2,10 +2,13 @@
 '''  module snake_v5_1_control has the following class:
      - Control
 '''
+from time import time
+
 from tkinter import Button
 
 from snake_v5_1_tools import BLUE, ORANGE, BWIDTH, Setup
 from snake_v5_1_snake import mouse_action_snake, reset_snakes, snake_selection
+from snake_v5_1_wall import mouse_action_wall
 
 setup = Setup()
 
@@ -42,7 +45,7 @@ class Control:
          -   exit_program
          -   __repr__
     '''
-    def __init__(self, mw, cell):
+    def __init__(self, aw, mw, cell):
         self.run = True
         self.pause = True
         self.left = False
@@ -52,41 +55,44 @@ class Control:
         self.in_button = False
         self.select_color = 'yellow'
         self.setup = False
+        self.aw = aw
         self.mw = mw
         self.cell = cell
+        self.double_click = False
+        self.n = 0
 
     def key_action(self, event):
         '''  function to determine action on key events
         '''
-        if event.keysym == 'Escape':     # stop running when Escase pressed
+        if event.keysym == 'Escape':    # stop running when Escase pressed
             self.run = False
 
-        elif event.char == 'b':          # b - change border color to blue
-            self.bcolor = BLUE
-
-        elif event.char == 'o':          # o - change border color to orange
-            self.bcolor = ORANGE
-
-        elif event.keysym == 'space':    # Space - toggle pause and run
+        elif event.keysym == 'space':   # Space - toggle pause and run
             self.pause_status()
 
-        elif event.keysym in ('w', 'W'):
-            self.setup_status()
-
-        elif event.char == 'c':          # c - clear screen and pause
-            self.clear_status()
-
-        elif event.char == 'm':          # m - change monitor status
-            self.monitor_status()
-
-        elif event.char == 's':          # s - select a snake
-            self.select_status()
-
-        elif event.keysym == 'Left':     # LEFT arrow - move left
+        elif event.keysym == 'Left':    # LEFT arrow - move left
             self.left = True
 
-        elif event.keysym == 'Right':    # RIGHT arrow - move right
+        elif event.keysym == 'Right':   # RIGHT arrow - move right
             self.right = True
+
+        elif event.char in ('b', 'B'):  # b - change border color to blue
+            self.bcolor = BLUE
+
+        elif event.char in ('o', 'O'):  # o - change border color to orange
+            self.bcolor = ORANGE
+
+        elif event.char in ('w', 'W'):  # w = setup walles
+            self.setup_status()
+
+        elif event.char in ('c', 'C'):  # c - clear screen and pause
+            self.clear_status()
+
+        elif event.char in ('m', 'M'):  # m - change monitor status
+            self.monitor_status()
+
+        elif event.char in ('s', 'S'):  # s - select a snake
+            self.select_status()
 
     def buttons(self, root):
         ''' definition of buttons: setup, pause, clear, select
@@ -148,6 +154,8 @@ class Control:
 
         if self.setup:
             self.setup_button.config(relief='sunken', bg=self.select_color)
+            self.pause_status()
+            reset_snakes(self.cell)
 
         else:
             self.setup_button.config(relief='raised',
@@ -156,7 +164,10 @@ class Control:
     def pause_status(self):
         '''  Method to toggle between pause and run
         '''
-        self.pause = not self.pause
+        if self.setup:
+            self.pause = False
+        else:
+            self.pause = not self.pause
 
         if self.pause:
             self.pause_button.config(relief='sunken', bg=self.select_color)
@@ -193,22 +204,33 @@ class Control:
             self.monitor_button.config(relief='raised')
 
     def mouse_action(self, event):
-        '''  if mouse event is clicked determine if this is during
-             setup or when program is running and paused. If in setup then
-             mouse event is used for the wall module, else it is used in the
-             snake module.
+        '''  Method to action mouse event
         '''
-        if not self.in_button:  # check if mounse position is not on a button
+        if not self.in_button:  # check if mouse position is not on a button
 
             if self.setup:
-                print('in setup now')
-                pass
+                mouse_action_wall(event, self.double_click, self.cell)
 
-            elif self.pause:
+            elif self.pause and not self.double_click:
                 mouse_action_snake(event, self.cell)
 
         else:
             print('mouse position is on button')
+
+        self.double_click = False
+
+
+    def mouse_click(self, event):
+        '''  Method to delay mouse action to allow for a double click to occur
+        '''
+        self.aw.after(250, self.mouse_action, event)
+
+
+    def mouse_double_click(self, event):
+        '''  Method to set double_click flag
+        '''
+        self.double_click = True
+
 
     def exit_program(self):
         '''  exit program on pressing the X (close window)

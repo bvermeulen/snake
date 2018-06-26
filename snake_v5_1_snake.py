@@ -12,7 +12,7 @@
         - delete_snake
         - set_snake_environment
         - reset_snakes
-        - plotlist_snake
+        - plot_snakes
         - snake_selection
         - show_snake_vision
 
@@ -22,7 +22,7 @@
 import random
 
 from snake_v5_1_tools import (RED, YELLOW, GREEN, Setup, PlotObject, eye,
-                              randomvector, hex_color)
+                              randomvector, plot_window, hex_color)
 
 '''  initialise the configuration paramaters
 '''
@@ -359,11 +359,17 @@ def set_snake_environment(cell, snake_index, content):
             cell[tail[i][0]][tail[i][1]].plot = True
 
 
-def plotlist_snakes(plotlist):
-    '''  fill the list plotlist for all snakes
+def plot_snakes(aw, bcolor):
+    '''  plot the snakes
     '''
+    plotlist = []
     for i in range(len(snake)):
         snake[i].plot(plotlist)
+    p = plot_window(canvas=aw,
+                    rectangle=setup.r_action_window,
+                    background='', border_color=bcolor,
+                    plotlist=plotlist)
+    return p
 
 
 def reset_snakes(cell):
