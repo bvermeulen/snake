@@ -2,8 +2,6 @@
 '''  module snake_v5_1_control has the following class:
      - Control
 '''
-from time import time
-
 from tkinter import Button
 
 from snake_v5_1_tools import BLUE, ORANGE, BWIDTH, Setup
@@ -120,7 +118,8 @@ class Control:
         self.clear_button.bind('<Leave>', self.out_button_area)
 
         self.monitor_button = Button(root, text='Monitor', relief='sunken',
-                                     width=BWIDTH, command=self.monitor_status)
+                                     width=BWIDTH, command=self.monitor_status,
+                                     bg=self.select_color)
         self.monitor_button.place(x=setup.b_w_o[3][0], y=setup.b_w_o[3][1])
         self.monitor_button.bind('<Enter>', self.in_button_area)
         self.monitor_button.bind('<Leave>', self.out_button_area)
@@ -192,16 +191,13 @@ class Control:
         '''  Method to toggle monitor window on and off
         '''
         self.monitor = not self.monitor
-        self.mw.delete("all")
 
         if self.monitor:
-            self.monitor_button.config(relief='sunken')
-            for i in range(setup.cells_x):
-                for j in range(setup.cells_y):
-                    self.cell[i][j].plot = True
+            self.monitor_button.config(relief='sunken', bg=self.select_color)
 
         else:
-            self.monitor_button.config(relief='raised')
+            self.monitor_button.config(relief='raised',
+                                       bg=self.default_button_bg)
 
     def mouse_action(self, event):
         '''  Method to action mouse event
@@ -219,18 +215,15 @@ class Control:
 
         self.double_click = False
 
-
     def mouse_click(self, event):
         '''  Method to delay mouse action to allow for a double click to occur
         '''
         self.aw.after(250, self.mouse_action, event)
 
-
     def mouse_double_click(self, event):
         '''  Method to set double_click flag
         '''
         self.double_click = True
-
 
     def exit_program(self):
         '''  exit program on pressing the X (close window)

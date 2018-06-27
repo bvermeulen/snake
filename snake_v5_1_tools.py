@@ -6,18 +6,8 @@
             - Setup
             - Cell
             - PlotObject
-
-     Function:
-            - read_config
-            - init_cells
-            - plot_window
-            - plot_monitor
-                cell_color
-            - plot_status
-            - display_text
-            - eye
-            - randomvector
-            - hex_color
+            - Monitor
+            - Tools
 '''
 import re
 import sys
@@ -47,6 +37,10 @@ STATUS_Y = 68
 class Setup:
     '''  Setup of variables environment for the program
          Input are the parameters from the configuration file
+         Methods:
+         - __init__
+         - read_config
+         - __repr__
     '''
     def __init__(self, set_window=False):
         '''  set the parameters for windows, font, time
@@ -55,7 +49,7 @@ class Setup:
 
         # read the configuration file
         _pattern_file, _fps, _cells_x, _cells_y, _cell_dim_x, _cell_dim_y \
-            = read_config()
+            = self.read_config()
 
         # set the variable from the configuration file
         self.pattern_file = _pattern_file
@@ -147,13 +141,13 @@ class Setup:
         # set some other parameters
         self.snake_length = 10  # this is the maximum snake length
         self.wall_v = []
-        self.wall_v.append([(int(0.10 * self.cells_x), int(0.10 * self.cells_y)),    # noqa E501
-                            (int(0.10 * self.cells_x), int(0.90 * self.cells_y)),    # noqa E501
-                            (int(0.80 * self.cells_x), int(0.90 * self.cells_y)),    # noqa E501
-                            (int(0.80 * self.cells_x), int(0.40 * self.cells_y))])   # noqa E501
-        self.wall_v.append([(int(0.25 * self.cells_x), int(0.25 * self.cells_y)),    # noqa E501
-                            (int(0.65 * self.cells_x), int(0.25 * self.cells_y))])   # noqa E501
-        self.brick_size = (int(0.8 * self.cell_dim_x), int(0.8 * self.cell_dim_y))   # noqa E501
+        self.wall_v.append([(int(0.10*self.cells_x), int(0.10*self.cells_y)),
+                            (int(0.10*self.cells_x), int(0.90*self.cells_y)),
+                            (int(0.80*self.cells_x), int(0.90*self.cells_y)),
+                            (int(0.80*self.cells_x), int(0.40*self.cells_y))])
+        self.wall_v.append([(int(0.25*self.cells_x), int(0.25*self.cells_y)),
+                            (int(0.65*self.cells_x), int(0.25*self.cells_y))])
+        self.brick_size = (int(0.8*self.cell_dim_x), int(0.8*self.cell_dim_y))
         self.myfont = "Calibri 12"
 
         # setup view_field
@@ -174,6 +168,37 @@ class Setup:
                                 (0, -2), (1, -2), (-1, -2)))    # -> N
         self.view_field.append(((1, -1), (0, -1), (1, 0),
                                 (2, -2), (1, -2), (2, -1)))     # -> NE
+
+    def read_config(self):
+        '''  read config file in 1st argument (otherwise default is
+             data/config.txt). Optionally 2nd argument is pattern file
+             otherwise defined in config file returns values for:
+             pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
+        '''
+        if len(sys.argv) >= 2:
+            config_file = sys.argv[1]
+
+        else:
+            config_file = os.path.join("data", "config.txt")
+
+        try:
+            with open(config_file) as cfile:
+                pattern_file = cfile.readline()[17:]
+                fps = int(cfile.readline()[17:])
+                cells_x = int(cfile.readline()[17:])
+                cells_y = int(cfile.readline()[17:])
+                cell_dim_x = int(cfile.readline()[17:])
+                cell_dim_y = int(cfile.readline()[17:])
+        except: # noqa E722
+            sys.exit('Unable to read the config file ...')
+
+        if len(sys.argv) == 3:
+            pattern_file = sys.argv[2]
+
+        # remove return /r, new line /n or spaces /s from pattern_file
+        pattern_file = re.sub(r'[\r\n\s]', '', pattern_file)
+
+        return pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
 
     def __repr__(self):
         '''  method to represent the contents of this class
@@ -209,6 +234,9 @@ class Cell:
 
 class PlotObject:
     '''  class PlotObject to create a point with attibutes to be plotted
+         Methods:
+         - __init__
+         - __repr__
     '''
     def __init__(self, origin, i, j, dimension, size, fcolor, ocolor, owidth,
                  shape):
@@ -231,182 +259,201 @@ class PlotObject:
         return s
 
 
-def read_config():
-    '''  read config file in 1st argument (otherwise default is
-         data/config.txt). Optionally 2nd argument is pattern file otherwise
-         defined in config file returns values for:
-         pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
+class Monitor:
+    '''  Class Monitor to handle functions of monitor display of status of cell
+         Methods:
+         - plot
+         - clear
+         - __repr__
     '''
-    if len(sys.argv) >= 2:
-        config_file = sys.argv[1]
+    def __init__(self, mroot, mw, cell):
+        self.mroot = mroot
+        self.mw = mw
+        self.cell = cell
 
-    else:
-        config_file = os.path.join("data", "config.txt")
+    def plot(self):
+        '''  plot the cell status in the monitor window
+             note only the head and the emptied tail need to be plotted so just
+             2 per snake
+        '''
+        plotlist = []
 
-    try:
-        with open(config_file) as cfile:
-            pattern_file = cfile.readline()[17:]
-            fps = int(cfile.readline()[17:])
-            cells_x = int(cfile.readline()[17:])
-            cells_y = int(cfile.readline()[17:])
-            cell_dim_x = int(cfile.readline()[17:])
-            cell_dim_y = int(cfile.readline()[17:])
-    except: # noqa E722
-        sys.exit('Unable to read the config file ...')
+        for i in range(setup.cells_x):
+            for j in range(setup.cells_y):
 
-    if len(sys.argv) == 3:
-        pattern_file = sys.argv[2]
+                if self.cell[i][j].plot:
+                    plotlist.append(PlotObject(origin=setup.m_w_o,
+                                    i=self.cell[i][j].i, j=self.cell[i][j].j,
+                                    dimension=(setup.m_dim_x, setup.m_dim_y),
+                                    size=(setup.m_dim_x, setup.m_dim_y),
+                                    fcolor=tools.cell_color(
+                                           self.cell[i][j].content),
+                                    ocolor='',
+                                    owidth=0,
+                                    shape='rectangle'))
+                    self.cell[i][j].plot = False
 
-    # remove return /r, new line /n or spaces /s from pattern_file
-    pattern_file = re.sub(r'[\r\n\s]', '', pattern_file)
+        m = tools.plot_window(canvas=self.mw, rectangle=(0, 0, 0, 0),
+                              background='', border_color='',
+                              plotlist=plotlist)
 
-    return pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
+        self.mroot.update()
+        return m
+
+    def clear(self, m_counter, monitor_clear):
+        '''  method to clear the monitor bufffer
+        '''
+        m_counter += 1
+        if (m_counter % monitor_clear == 0):
+            self.mw.delete("all")
+            m_counter = 0
+
+            for i in range(setup.cells_x):
+                for j in range(setup.cells_y):
+                    self.cell[i][j].plot = True
+
+        return m_counter
+
+    def __repr__(self):
+        '''  method to represent the contents of this class
+        '''
+        s = ''.join('{} = {}\n'.format(k, v) for k, v in self.__dict__.items())
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.
+             format(self=self))+s
+        return s
+
+
+class Tools:
+    '''   class with the methods:
+          - init_cells
+          - plot_window
+          - plot_status
+          - display_text
+          - eye
+          - randomvector
+          - hex_color
+          - cell_color
+          - __repr__
+    '''
+    def init_cells(self):
+        '''  initialise the cells to capture status of the field
+             Cell. cell.x and cell.y are the monitor cell positions
+        '''
+        cell = [[Cell(
+                i, j,
+                True, 'empty') for j in range(setup.cells_y)]
+                for i in range(setup.cells_x)]
+        return cell
+
+    def plot_window(self, canvas, rectangle, background,
+                    border_color, plotlist):
+        '''  draw  window border and background, then plot all the points in
+             the plot list
+        '''
+        canvas.create_rectangle(rectangle,
+                                outline=self.hex_color(border_color),
+                                fill=self.hex_color(background), width=LWIDTH)
+        p = []
+        for plotpoint in plotlist:
+            if plotpoint.shape == 'rectangle':
+                p.append(canvas.create_rectangle(plotpoint.x1, plotpoint.y1,
+                         plotpoint.x2, plotpoint.y2,
+                         fill=self.hex_color(plotpoint.fcolor),
+                         outline=self.hex_color(plotpoint.ocolor),
+                         width=plotpoint.owidth))
+
+            elif plotpoint.shape == 'oval':
+                p.append(canvas.create_oval(plotpoint.x1, plotpoint.y1,
+                         plotpoint.x2, plotpoint.y2,
+                         fill=self.hex_color(plotpoint.fcolor),
+                         outline=self.hex_color(plotpoint.ocolor),
+                         width=plotpoint.owidth))
+
+            else:
+                assert False, "shape can only be 'rectangle' or 'oval'"
+
+        return p
+
+    def plot_status(self, label_SMB, pause_status):
+        '''  display status pause or run
+        '''
+        if pause_status:
+            label_SMB[0].lift()
+            label_SMB[0].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
+
+        else:
+            label_SMB[1].lift()
+            label_SMB[1].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
+
+    def display_text(self, aw, t_elapsed, snakes, select):
+        '''  display number snakes and time passed in seconds in status window
+             left every 1 s and refresh the windows according to refresh_rate
+        '''
+        s_num = lambda x: str(x) if x > 0 else 'None'  # noqa: E731
+        # display text only once a second
+        if t_elapsed % 1000 < 80:
+            text = 'Number of snakes: ' + s_num(snakes) + '\n' + \
+                   'Selected snake: ' + s_num(select) + '\n' + \
+                   'Elapsed time: ' + str(int(t_elapsed/1000)) + ' seconds.'
+            label = Label(aw, text=text, wraplength=setup.text_x, bg='grey',
+                          font=setup.myfont, justify='left')
+            label.place(x=setup.t_w_o[0], y=setup.t_w_o[1])
+
+    def eye(self, head, cell, a):
+        ''' captures a value of the view depending on looking vector a
+        '''
+        v = 0
+        for i in range(len(a)):
+            if cell[(head[0]+a[i][0]) % setup.cells_x][(head[1]+a[i][1]) %
+               setup.cells_y].content != 'empty':
+                if i == 0:
+                    v = v + 4
+                else:
+                    v = v + 1
+        return v
+
+    def randomvector(self):
+        ''' calculate a random vector ([-1,0-1],[-1,0,-1]) but not (0,0))
+        '''
+        vector = (0, 0)
+        while vector == (0, 0):
+            x = random.randint(-1, 1)
+            y = random.randint(-1, 1)
+            vector = (x, y)
+        return vector
+
+    def hex_color(self, color):
+        ''' converts color (R, G, B) to a Hex string for tkinter
+        '''
+        if color != '':
+            hcolor = f'#{color[0]:02x}{color[1]:02x}{color[2]:02x}'
+        else:
+            hcolor = ''
+
+        return hcolor
+
+    def cell_color(self, content):
+        '''  internal function to determine color
+        '''
+        if content == 'empty':
+            color = WHITE
+        elif content == 'snake':
+            color = RED
+        elif content == 'wall':
+            color = BLACK
+        else:
+            assert False, "this option can not be possible, check code"
+
+        return color
+
+    def __repr__(self):
+        '''  method to represent the contents of this class
+        '''
+        s = ''.join('{} = {}\n'.format(k, v) for k, v in self.__dict__.items())
+        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.
+             format(self=self))+s
+        return s
 
 
 setup = Setup()
-
-
-def init_cells():
-    '''  initialise the cells to capture status of the field
-         Cell. cell.x and cell.y are the monitor cell positions
-    '''
-    cell = [[Cell(
-            i, j,
-            True, 'empty') for j in range(setup.cells_y)]
-            for i in range(setup.cells_x)]
-    return cell
-
-
-def plot_window(canvas, rectangle, background, border_color, plotlist):
-
-    '''  draw  window border and background, then plot all the points in the
-         plot list
-    '''
-    canvas.create_rectangle(rectangle, outline=hex_color(border_color),
-                            fill=hex_color(background), width=LWIDTH)
-    p = []
-    for plotpoint in plotlist:
-        if plotpoint.shape == 'rectangle':
-            p.append(canvas.create_rectangle(plotpoint.x1, plotpoint.y1,
-                     plotpoint.x2, plotpoint.y2,
-                     fill=hex_color(plotpoint.fcolor),
-                     outline=hex_color(plotpoint.ocolor),
-                     width=plotpoint.owidth))
-
-        elif plotpoint.shape == 'oval':
-            p.append(canvas.create_oval(plotpoint.x1, plotpoint.y1,
-                     plotpoint.x2, plotpoint.y2,
-                     fill=hex_color(plotpoint.fcolor),
-                     outline=hex_color(plotpoint.ocolor),
-                     width=plotpoint.owidth))
-
-        else:
-            assert False, "shape can only be 'rectangle' or 'oval'"
-
-    return p
-
-
-def plot_monitor(mroot, mw, cell):
-    '''  plot the cell status in the monitor window
-         note only the head and the emptied tail need to be plotted so just
-         2 per snake
-    '''
-    plotlist = []
-
-    for i in range(setup.cells_x):
-        for j in range(setup.cells_y):
-
-            if cell[i][j].plot:
-                plotlist.append(PlotObject(origin=setup.m_w_o,
-                                i=cell[i][j].i, j=cell[i][j].j,
-                                dimension=(setup.m_dim_x, setup.m_dim_y),
-                                size=(setup.m_dim_x, setup.m_dim_y),
-                                fcolor=cell_color(cell[i][j].content),
-                                ocolor='',
-                                owidth=0,
-                                shape='rectangle'))
-                cell[i][j].plot = False
-
-    m = plot_window(canvas=mw, rectangle=(0, 0, 0, 0), background='',
-                    border_color='', plotlist=plotlist)
-
-    mroot.update()
-    return m
-
-def plot_status(label_SMB, pause_status):
-    '''  display status pause or run
-    '''
-    if pause_status:
-        label_SMB[0].lift()
-        label_SMB[0].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
-
-    else:
-        label_SMB[1].lift()
-        label_SMB[1].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
-
-
-def display_text(aw, t_elapsed, snakes, select):
-    '''  display number snakes and time passed in seconds in status window
-         left every 1 s and refresh the windows according to refresh_rate
-    '''
-    s_num = lambda x: str(x) if x > 0 else 'None'  # noqa: E731
-    # display text only once a second
-    if t_elapsed % 1000 < 80:
-        text = 'Number of snakes: ' + s_num(snakes) + '\n' + \
-               'Selected snake: ' + s_num(select) + '\n' + \
-               'Elapsed time: ' + str(int(t_elapsed/1000)) + ' seconds.'
-        label = Label(aw, text=text, wraplength=setup.text_x, bg='grey',
-                      font=setup.myfont, justify='left')
-        label.place(x=setup.t_w_o[0], y=setup.t_w_o[1])
-
-
-def eye(head, cell, a):
-    ''' captures a value of the view depending on looking vector a
-    '''
-
-    v = 0
-    for i in range(len(a)):
-        if cell[(head[0] + a[i][0]) % setup.cells_x][(head[1] + a[i][1]) %
-           setup.cells_y].content != 'empty':
-            if i == 0:
-                v = v + 4
-            else:
-                v = v + 1
-    return v
-
-
-def randomvector():
-    ''' calculate a random vector ([-1,0-1],[-1,0,-1]) but not (0,0))
-    '''
-    vector = (0, 0)
-    while vector == (0, 0):
-        x = random.randint(-1, 1)
-        y = random.randint(-1, 1)
-        vector = (x, y)
-    return vector
-
-
-def hex_color(color):
-    ''' converts color (R, G, B) to a Hex string for tkinter
-    '''
-    if color != '':
-        hcolor = f'#{color[0]:02x}{color[1]:02x}{color[2]:02x}'
-    else:
-        hcolor = ''
-
-    return hcolor
-
-
-def cell_color(content):
-    '''  internal function to determine color
-    '''
-    if content == 'empty':
-        color = WHITE
-    elif content == 'snake':
-        color = RED
-    elif content == 'wall':
-        color = BLACK
-    else:
-        assert False, "this option can not be possible, check code"
-
-    return color
+tools = Tools()

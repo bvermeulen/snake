@@ -14,8 +14,7 @@
 from time import time
 
 import snake_v5_1_tools    # noqa F401 - required for debugging
-from snake_v5_1_tools import (BLACK, YELLOW, Setup, init_cells,
-                              plot_monitor, plot_status, display_text)
+from snake_v5_1_tools import (Setup, Monitor, Tools,)
 import snake_v5_1_wall     # noqa F401 - required for debugging
 from snake_v5_1_wall import init_walls, plot_walls
 
@@ -30,7 +29,7 @@ from snake_v5_1_snake import (move_randomly, show_snake_vision,
 def main():
     '''  Main program of snake
     '''
-    global setup, cntrl, debug_stats, cell, wall, elapsed_time
+    global setup, cntrl, monitor, debug_stats, cell, wall, elapsed_time
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
@@ -39,7 +38,8 @@ def main():
 
     '''  initialise the local variables
     '''
-    cell = init_cells()
+    tools = Tools()
+    cell = tools.init_cells()
     reset_snakes(cell)
 
     debug_stats = [0, 0, 0, 0, 0]
@@ -52,6 +52,9 @@ def main():
     setup.mroot.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
     start_time = time()
     wall = init_walls(cell)
+    monitor = Monitor(setup.mroot, setup.mw, cell)
+    m_counter = 0
+    monitor_clear = 500
 
     '''  run indefinetaly while run is true
     '''
@@ -88,25 +91,27 @@ def main():
         '''  update status and text and show the screen
         '''
         time_elapsed = int(1000 * (time() - start_time))
-        plot_status(setup.label_SMB, cntrl.pause)
-        display_text(setup.aw, time_elapsed, sm.snake_number, sm.snake_select)
+        tools.plot_status(setup.label_SMB, cntrl.pause)
+        tools.display_text(setup.aw, time_elapsed, sm.snake_number,
+                           sm.snake_select)
 
         if cntrl.monitor:
-            m = plot_monitor(setup.mroot, setup.mw, cell)
+            monitor.plot()
+            print('m_counter is: ', m_counter, end='\r')
+            m_counter = monitor.clear(m_counter, monitor_clear)
 
         #  update the screen and display at rate fps
         # setup.root.after(int(1000 / setup.fps))
         setup.root.update()
         setup.aw.delete("all")
-        #setup.mw.delete(*m)
 
     setup.root.destroy()
     setup.mroot.destroy()
     debug_stats[4] = int(time_elapsed / 1000)
     print('debug_stats:', debug_stats)
 
-    return setup, cntrl, debug_stats, cell, wall, time_elapsed
+    return setup, cntrl, monitor, debug_stats, cell, wall, time_elapsed
 
 
 if __name__ == '__main__':
-    setup, cntrl, debug_stats, cell, wall, time_elapsed = main()
+    setup, cntrl, monitor, debug_stats, cell, wall, time_elapsed = main()

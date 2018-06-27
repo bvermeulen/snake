@@ -5,14 +5,13 @@
         - SnakeObject
 
         Functions:
-        - init_cells
         - mouse_action_snake
         - move_randomly
         - create_snake
         - delete_snake
         - set_snake_environment
-        - reset_snakes
         - plot_snakes
+        - reset_snakes
         - snake_selection
         - show_snake_vision
 
@@ -21,13 +20,13 @@
 '''
 import random
 
-from snake_v5_1_tools import (RED, YELLOW, GREEN, Setup, PlotObject, eye,
-                              randomvector, plot_window, hex_color)
+from snake_v5_1_tools import (RED, YELLOW, GREEN, Setup, PlotObject, Tools,)
 
 '''  initialise the configuration paramaters
 '''
 global snake, snake_number
 setup = Setup()  # window setup is default False
+tools = Tools()
 
 snake = []
 snake_number = 0
@@ -175,37 +174,37 @@ class SnakeObject:
              component vector (LV, FV, RV)
         '''
         if self.vector == (1, 0):
-            LV = eye(self.head, cell, setup.view_field[-1 % 8])
-            FV = eye(self.head, cell, setup.view_field[0 % 8])
-            RV = eye(self.head, cell, setup.view_field[1 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[-1 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[0 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[1 % 8])
         elif self.vector == (1, 1):
-            LV = eye(self.head, cell, setup.view_field[0 % 8])
-            FV = eye(self.head, cell, setup.view_field[1 % 8])
-            RV = eye(self.head, cell, setup.view_field[2 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[0 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[1 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[2 % 8])
         elif self.vector == (0, 1):
-            LV = eye(self.head, cell, setup.view_field[1 % 8])
-            FV = eye(self.head, cell, setup.view_field[2 % 8])
-            RV = eye(self.head, cell, setup.view_field[3 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[1 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[2 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[3 % 8])
         elif self.vector == (-1, 1):
-            LV = eye(self.head, cell, setup.view_field[2 % 8])
-            FV = eye(self.head, cell, setup.view_field[3 % 8])
-            RV = eye(self.head, cell, setup.view_field[4 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[2 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[3 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[4 % 8])
         elif self.vector == (-1, 0):
-            LV = eye(self.head, cell, setup.view_field[3 % 8])
-            FV = eye(self.head, cell, setup.view_field[4 % 8])
-            RV = eye(self.head, cell, setup.view_field[5 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[3 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[4 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[5 % 8])
         elif self.vector == (-1, -1):
-            LV = eye(self.head, cell, setup.view_field[4 % 8])
-            FV = eye(self.head, cell, setup.view_field[5 % 8])
-            RV = eye(self.head, cell, setup.view_field[6 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[4 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[5 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[6 % 8])
         elif self.vector == (0, -1):
-            LV = eye(self.head, cell, setup.view_field[5 % 8])
-            FV = eye(self.head, cell, setup.view_field[6 % 8])
-            RV = eye(self.head, cell, setup.view_field[7 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[5 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[6 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[7 % 8])
         elif self.vector == (1, -1):
-            LV = eye(self.head, cell, setup.view_field[6 % 8])
-            FV = eye(self.head, cell, setup.view_field[7 % 8])
-            RV = eye(self.head, cell, setup.view_field[8 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[6 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[7 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[8 % 8])
         else:
             assert False, "Something wrong here, check code"
 
@@ -314,7 +313,7 @@ def create_snake(grid, cell):
     '''
     global snake_number  # explicitly call on global variable
     length = random.randint(1, setup.snake_length)
-    vector = randomvector()
+    vector = tools.randomvector()
     snake.append(SnakeObject(grid, vector, length, YELLOW))
     snake_number += 1
     snake_selection(reset_selection=True)
@@ -365,10 +364,10 @@ def plot_snakes(aw, bcolor):
     plotlist = []
     for i in range(len(snake)):
         snake[i].plot(plotlist)
-    p = plot_window(canvas=aw,
-                    rectangle=setup.r_action_window,
-                    background='', border_color=bcolor,
-                    plotlist=plotlist)
+    p = tools.plot_window(canvas=aw,
+                          rectangle=setup.r_action_window,
+                          background='', border_color=bcolor,
+                          plotlist=plotlist)
     return p
 
 
@@ -421,14 +420,14 @@ def show_snake_vision(aw, cell):
 
     l_v = max(int((6 - vision[0]) * delta_intensity), 0)
     color = (l_v, l_v, l_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=tools.hex_color(color)))
 
     f_v = max(int((6 - vision[1]) * delta_intensity), 0)
     color = (f_v, f_v, f_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=tools.hex_color(color)))
 
     r_v = max(int((6 - vision[2]) * delta_intensity), 0)
     color = (r_v, r_v, r_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=tools.hex_color(color)))
 
     return vw

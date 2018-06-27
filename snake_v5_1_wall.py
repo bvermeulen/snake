@@ -11,15 +11,17 @@
         Author: Bruno Vermeulen
         bruno_vermeulen2001@yahoo.com
 '''
-from snake_v5_1_tools import (GREY, RED, ORANGE, LIGHTGREY, BLACK, YELLOW,
-                              Setup, PlotObject, plot_window)
+from snake_v5_1_tools import (GREY, ORANGE, LIGHTGREY, BLACK, YELLOW,
+                              Setup, PlotObject, Tools)
 
 ''' initialise the configuration paramaters
 '''
 setup = Setup()  # window setup is default False
+tools = Tools()
 
 global wall_is_selected
 wall_is_selected = False
+
 
 class WallObject:
     '''   Definition of wall object with following methods:
@@ -53,12 +55,13 @@ class WallObject:
             range_x = b_x - a_x
             range_y = b_y - a_y
             steps = max(abs(range_x), abs(range_y))
-            for step in range(steps+1):
-                i = a_x + round(step / steps * range_x)
-                j = a_y + round(step / steps * range_y)
-                self.bricks.append((i, j))
-                cell[i][j].content = 'wall'
-                cell[i][j].plot = True
+            if steps > 0:
+                for step in range(steps+1):
+                    i = a_x + round(step / steps * range_x)
+                    j = a_y + round(step / steps * range_y)
+                    self.bricks.append((i, j))
+                    cell[i][j].content = 'wall'
+                    cell[i][j].plot = True
 
     def remove_bricks(self, cell):
         '''  method to delete the wall and clear the environment cell
@@ -68,15 +71,12 @@ class WallObject:
             cell[brick[0]][brick[1]].plot = True
         self.bricks = []
 
-    def select_wall(self):
-        '''  method to select wall
+    def select_wall(self, select_choice):
+        '''  method to select or deselect wall, selection is boolean
         '''
-        self.select = True
-
-    def deselect_wall(self):
-        '''  mthod to deselect wall
-        '''
-        self.select = False
+        assert (type(select_choice) is bool), "select choice must be boolean"
+        self.select = select_choice
+        return self.select
 
     def delete_vertex(self, grid, cell):
         '''  method to delete vertex point "grid" and rebuild the wall
@@ -99,27 +99,19 @@ class WallObject:
             self.vertices.append(grid)
         self.build_bricks(cell)
 
-    def plot(self, plotlist):
+    def plot(self, plotlist, wall_setup):
         '''  method to plot the wall
         '''
-        for brick in self.bricks:
-            plotlist.append(PlotObject(origin=setup.a_w_o,
-                            i=brick[0], j=brick[1],
-                            dimension=(setup.cell_dim_x, setup.cell_dim_y),
-                            size=setup.brick_size,
-                            fcolor=self.color,
-                            ocolor='',
-                            owidth=0,
-                            shape='rectangle'))
-
-    def plot_modify(self, plotlist):
-        '''  method to plot the wall in setup module
-        '''
-        if self.select:
-            color = YELLOW
+        if wall_setup:
+            if self.select:
+                color = YELLOW
+            else:
+                color = GREY
+            shape = 'oval'
 
         else:
-            color = GREY
+            color = self.color
+            shape = 'rectangle'
 
         for brick in self.bricks:
             plotlist.append(PlotObject(origin=setup.a_w_o,
@@ -129,18 +121,18 @@ class WallObject:
                             fcolor=color,
                             ocolor='',
                             owidth=0,
-                            shape='oval'))
+                            shape=shape))
 
-        for vertex in self.vertices:
-            plotlist.append(PlotObject(origin=setup.a_w_o,
-                            i=vertex[0], j=vertex[1],
-                            dimension=(setup.cell_dim_x, setup.cell_dim_y),
-                            size=setup.brick_size,
-                            fcolor=ORANGE,
-                            ocolor='',
-                            owidth=0,
-                            shape='rectangle'))
-
+        if wall_setup:
+            for vertex in self.vertices:
+                plotlist.append(PlotObject(origin=setup.a_w_o,
+                                i=vertex[0], j=vertex[1],
+                                dimension=(setup.cell_dim_x, setup.cell_dim_y),
+                                size=setup.brick_size,
+                                fcolor=ORANGE,
+                                ocolor='',
+                                owidth=0,
+                                shape='rectangle'))
 
     def __repr__(self):
         '''  method to represent the contents of this class
@@ -176,12 +168,10 @@ def mouse_action_wall(mouse_event, double_click, cell):
             if grid in wall.bricks and mouse_event.num == 1 \
                and double_click and not wall_is_selected:
                 print('wall is selected ...', grid)
-                wall.select_wall()
-                wall_is_selected = True
+                wall_is_selected = wall.select_wall(True)
 
             elif mouse_event.num == 3 and wall.select:
-                wall.deselect_wall()
-                wall_is_selected = False
+                wall_is_selected = wall.select_wall(False)
 
             elif wall.select and grid in wall.vertices and double_click:
                 wall.delete_vertex(grid, cell)
@@ -194,18 +184,17 @@ def plot_walls(aw, bcolor, wall_setup):
     '''  function to plot walls in either setup case or normal
     '''
     plotlist = []
+    for wall in walls:
+        wall.plot(plotlist, wall_setup)
+
     if wall_setup:
-        for wall in walls:
-            wall.plot_modify(plotlist)
         bgcolor = LIGHTGREY
 
     else:
-        for wall in walls:
-            wall.plot(plotlist)
         bgcolor = BLACK
 
-    w = plot_window(canvas=aw, rectangle=setup.r_action_window,
-                    background=bgcolor, border_color=bcolor,
-                    plotlist=plotlist)
+    w = tools.plot_window(canvas=aw, rectangle=setup.r_action_window,
+                          background=bgcolor, border_color=bcolor,
+                          plotlist=plotlist)
 
     return w
