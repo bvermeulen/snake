@@ -28,7 +28,7 @@ GREY = (128, 128, 128)
 GREEN = (0, 128, 0)
 LIGHTGREY = (200, 200, 200)
 PADDING = 5
-LWIDTH = 1
+LWIDTH = 3
 BWIDTH = 4
 STATUS_X = 60
 STATUS_Y = 68
@@ -72,10 +72,12 @@ class Setup:
 
         self.m_dim_x = 2
         self.m_dim_y = 2
-        m_w_x = self.cells_x * self.m_dim_x + 2 * PADDING
-        m_w_y = self.cells_y * self.m_dim_y + 2 * PADDING
+        m_w_x = self.cells_x * self.m_dim_x + 2*PADDING
+        m_w_y = self.cells_y * self.m_dim_y + 2*PADDING
         status_y = max(STATUS_Y, 0)
         self.m_w_o = (PADDING, PADDING)
+        self.r_monitor_window = (self.m_w_o, self.m_w_o[0] + m_w_x - 2*PADDING,
+                                 self.m_w_o[1] + m_w_y - 2*PADDING)
 
         v_dim_x = 30
         v_dim_y = 30
@@ -116,12 +118,12 @@ class Setup:
             self.root = Tk()
             self.root.title("Snakes ...")
             self.root.geometry(f"{main_x}x{main_y}")
-            self.root.configure(background='black')
+            self.root.configure(background=tools.hex_color(BLACK))
 
             self.mroot = Tk()
             self.mroot.title("Monitor ...")
             self.mroot.geometry(f"{m_w_x}x{m_w_y}")
-            self.mroot.configure(background='blue')
+            self.mroot.configure(background=tools.hex_color(WHITE))
 
             self.aw = Canvas(self.root, width=main_x, height=main_y, bg='grey')
             self.aw.place(x=0, y=0)
@@ -135,7 +137,8 @@ class Setup:
             self.label_SMB.append(Label(self.aw, image=run_SMB, bg='grey'))
             self.label_SMB[1].image = run_SMB
 
-            self.mw = Canvas(self.mroot, width=m_w_x, height=m_w_y, bg='blue')
+            self.mw = Canvas(self.mroot, width=m_w_x, height=m_w_y,
+                             bg=tools.hex_color(WHITE))
             self.mw.pack(fill=BOTH, expand=YES)
 
         # set some other parameters
@@ -213,15 +216,32 @@ class Cell:
     '''  class Cell to represent the play environment and status with
          following methods:
          - __init__
+         - cell_color
          - __repr__
     '''
     def __init__(self, i, j, plot, content):
+        ''' method to initialise cell
+        '''
         self.i = i
         self.j = j
         self.plot = plot
         self.content = content
         assert self.content in ['empty', 'wall', 'snake'], \
             "content is limited to empty, wall or snake"
+
+    def cell_color(self):
+        ''' method to set the cell color for display
+        '''
+        if self.content == 'empty':
+            color = WHITE
+        elif self.content == 'snake':
+            color = RED
+        elif self.content == 'wall':
+            color = GREEN
+        else:
+            assert False, "this option can not be possible, check code"
+
+        return color
 
     def __repr__(self):
         '''  method to represent the contents of this class
@@ -240,7 +260,6 @@ class PlotObject:
     '''
     def __init__(self, origin, i, j, dimension, size, fcolor, ocolor, owidth,
                  shape):
-
         self.x1 = origin[0] + i * dimension[0]
         self.y1 = origin[1] + j * dimension[1]
         self.x2 = self.x1 + size[0]
@@ -286,16 +305,15 @@ class Monitor:
                                     i=self.cell[i][j].i, j=self.cell[i][j].j,
                                     dimension=(setup.m_dim_x, setup.m_dim_y),
                                     size=(setup.m_dim_x, setup.m_dim_y),
-                                    fcolor=tools.cell_color(
-                                           self.cell[i][j].content),
+                                    fcolor=self.cell[i][j].cell_color(),
                                     ocolor='',
                                     owidth=0,
                                     shape='rectangle'))
                     self.cell[i][j].plot = False
 
-        m = tools.plot_window(canvas=self.mw, rectangle=(0, 0, 0, 0),
-                              background='', border_color='',
-                              plotlist=plotlist)
+        m = tools.plot_window(canvas=self.mw, rectangle=setup.r_monitor_window,
+                              background='', border_color=BLACK,
+                              border_width=2, plotlist=plotlist)
 
         self.mroot.update()
         return m
@@ -306,11 +324,12 @@ class Monitor:
         m_counter += 1
         if (m_counter % monitor_clear == 0):
             self.mw.delete("all")
-            m_counter = 0
+            # m_counter = 0
 
             for i in range(setup.cells_x):
                 for j in range(setup.cells_y):
-                    self.cell[i][j].plot = True
+                    if self.cell[i][j].content != 'empty':
+                        self.cell[i][j].plot = True
 
         return m_counter
 
@@ -332,7 +351,6 @@ class Tools:
           - eye
           - randomvector
           - hex_color
-          - cell_color
           - __repr__
     '''
     def init_cells(self):
@@ -341,18 +359,19 @@ class Tools:
         '''
         cell = [[Cell(
                 i, j,
-                True, 'empty') for j in range(setup.cells_y)]
+                False, 'empty') for j in range(setup.cells_y)]
                 for i in range(setup.cells_x)]
         return cell
 
     def plot_window(self, canvas, rectangle, background,
-                    border_color, plotlist):
+                    border_color, border_width, plotlist):
         '''  draw  window border and background, then plot all the points in
              the plot list
         '''
         canvas.create_rectangle(rectangle,
                                 outline=self.hex_color(border_color),
-                                fill=self.hex_color(background), width=LWIDTH)
+                                fill=self.hex_color(background),
+                                width=border_width)
         p = []
         for plotpoint in plotlist:
             if plotpoint.shape == 'rectangle':
@@ -431,20 +450,6 @@ class Tools:
             hcolor = ''
 
         return hcolor
-
-    def cell_color(self, content):
-        '''  internal function to determine color
-        '''
-        if content == 'empty':
-            color = WHITE
-        elif content == 'snake':
-            color = RED
-        elif content == 'wall':
-            color = BLACK
-        else:
-            assert False, "this option can not be possible, check code"
-
-        return color
 
     def __repr__(self):
         '''  method to represent the contents of this class

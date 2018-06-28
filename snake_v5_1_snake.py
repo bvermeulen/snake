@@ -20,7 +20,8 @@
 '''
 import random
 
-from snake_v5_1_tools import (RED, YELLOW, GREEN, Setup, PlotObject, Tools,)
+from snake_v5_1_tools import (RED, YELLOW, GREEN, LWIDTH, Setup,
+                              PlotObject, Tools,)
 
 '''  initialise the configuration paramaters
 '''
@@ -367,7 +368,7 @@ def plot_snakes(aw, bcolor):
     p = tools.plot_window(canvas=aw,
                           rectangle=setup.r_action_window,
                           background='', border_color=bcolor,
-                          plotlist=plotlist)
+                          border_width=LWIDTH, plotlist=plotlist)
     return p
 
 

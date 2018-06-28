@@ -12,7 +12,7 @@
         bruno_vermeulen2001@yahoo.com
 '''
 from snake_v5_1_tools import (GREY, ORANGE, LIGHTGREY, BLACK, YELLOW,
-                              Setup, PlotObject, Tools)
+                              LWIDTH, Setup, PlotObject, Tools)
 
 ''' initialise the configuration paramaters
 '''
@@ -195,6 +195,6 @@ def plot_walls(aw, bcolor, wall_setup):
 
     w = tools.plot_window(canvas=aw, rectangle=setup.r_action_window,
                           background=bgcolor, border_color=bcolor,
-                          plotlist=plotlist)
+                          border_width=LWIDTH, plotlist=plotlist)
 
     return w

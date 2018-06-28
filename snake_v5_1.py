@@ -54,7 +54,7 @@ def main():
     wall = init_walls(cell)
     monitor = Monitor(setup.mroot, setup.mw, cell)
     m_counter = 0
-    monitor_clear = 500
+    monitor_clear = 200
 
     '''  run indefinetaly while run is true
     '''
