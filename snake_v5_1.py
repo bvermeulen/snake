@@ -29,7 +29,7 @@ from snake_v5_1_snake import (move_randomly, show_snake_vision,
 def main():
     '''  Main program of snake
     '''
-    global setup, cntrl, monitor, debug_stats, cell, wall, elapsed_time
+    global setup, cntrl, monitor, debug_stats, cell, elapsed_time
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
@@ -43,15 +43,15 @@ def main():
     reset_snakes(cell)
 
     debug_stats = [0, 0, 0, 0, 0]
-    cntrl = Control(setup.aw, setup.mw, cell)
-    cntrl.buttons(setup.root)
+    cntrl = Control(setup.root, setup.aw, setup.mw, cell)
+    cntrl.buttons()
     setup.root.bind('<Key>', cntrl.key_action)
     setup.aw.bind('<Button>', cntrl.mouse_click)
     setup.aw.bind('<Double-Button>', cntrl.mouse_double_click)
     setup.root.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
     setup.mroot.protocol('WM_DELETE_WINDOW', cntrl.exit_program)
     start_time = time()
-    wall = init_walls(cell)
+    init_walls(cell)
     monitor = Monitor(setup.mroot, setup.mw, cell)
     m_counter = 0
     monitor_clear = 200
@@ -68,7 +68,6 @@ def main():
         if cntrl.setup:
             '''  if setup wait on user input to setup the walls
             '''
-            pass
 
         else:
             '''  otherwise handle the snake ...
@@ -110,8 +109,8 @@ def main():
     debug_stats[4] = int(time_elapsed / 1000)
     print('debug_stats:', debug_stats)
 
-    return setup, cntrl, monitor, debug_stats, cell, wall, time_elapsed
+    return setup, cntrl, monitor, debug_stats, cell, time_elapsed
 
 
 if __name__ == '__main__':
-    setup, cntrl, monitor, debug_stats, cell, wall, time_elapsed = main()
+    setup, cntrl, monitor, debug_stats, cell, time_elapsed = main()

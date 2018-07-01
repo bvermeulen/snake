@@ -119,7 +119,7 @@ class SnakeObject:
             s = (0, -1)
         elif self.vector == (1, 0):
             s = (1, -1)
-        self.vector = (s[0], s[1])
+        self.vector = s
 
     def move_right(self):
         '''  depending on vector select next position (relative to head)
@@ -141,7 +141,7 @@ class SnakeObject:
             s = (1, 0)
         elif self.vector == (1, 0):
             s = (1, 1)
-        self.vector = (s[0], s[1])
+        self.vector = s
 
     def plot(self, plotlist):
         '''  method to fill the plotlist with snake points to be plotted

@@ -27,6 +27,7 @@ YELLOW = (255, 255, 0)
 GREY = (128, 128, 128)
 GREEN = (0, 128, 0)
 LIGHTGREY = (200, 200, 200)
+NOCOLOR = (999, 999, 999)
 PADDING = 5
 LWIDTH = 3
 BWIDTH = 4
@@ -94,20 +95,33 @@ class Setup:
                            self.r_v_w[1][0] + PADDING +
                            2 * v_dim_x, v_w_o[1] + v_dim_y))
 
-        _bwidth = BWIDTH * 16
+        _bwidth = BWIDTH*16
         _bheight = 36
         self.b_w_o = []
-        self.b_w_o.append((v_w_o[0] - 3 * (PADDING + _bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 2 * (PADDING + _bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 1 * (PADDING + _bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 3 * (PADDING + _bwidth), self.s_w_o[1] +
+        self.b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), self.s_w_o[1]))
+        self.b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), self.s_w_o[1]))
+        self.b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), self.s_w_o[1]))
+        self.b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), self.s_w_o[1] +
                           _bheight))
-        self.b_w_o.append((v_w_o[0] - 2 * (PADDING + _bwidth), self.s_w_o[1] +
+        self.b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), self.s_w_o[1] +
                           _bheight))
-        self.b_w_o.append((v_w_o[0] - 1 * (PADDING + _bwidth), self.s_w_o[1] +
+        self.b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), self.s_w_o[1] +
                           _bheight))
 
-        self.text_x = self.b_w_o[0][0] - 2 * PADDING
+        self.text_x = self.b_w_o[0][0] - 2*PADDING
+
+        _bwidth = BWIDTH*10
+        self.color_buttons = {
+              GREY:
+              (self.b_w_o[0][0] - 5*(PADDING+_bwidth), self.s_w_o[1]),
+              GREEN:
+              (self.b_w_o[0][0] - 4*(PADDING+_bwidth), self.s_w_o[1]),
+              ORANGE:
+              (self.b_w_o[0][0] - 3*(PADDING+_bwidth), self.s_w_o[1]),
+              BLUE:
+              (self.b_w_o[0][0] - 2*(PADDING+_bwidth), self.s_w_o[1]),
+              WHITE:
+              (self.b_w_o[0][0] - 1*(PADDING+_bwidth), self.s_w_o[1])}
 
         main_x = PADDING * 2 + a_w_x
         main_y = PADDING * 3 + a_w_y + status_y
