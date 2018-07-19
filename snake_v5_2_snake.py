@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 '''     python version 3.6
 
-        Module snake_v5_1_snake contains following Classes:
+        Module snake_v5_2_snake contains following classes:
         - SnakeObject
 
         Functions:
-        - init_cells
         - mouse_action_snake
         - move_randomly
         - create_snake
         - delete_snake
         - set_snake_environment
-        - reset_snakes
         - plot_snakes
+        - reset_snakes
         - snake_selection
         - show_snake_vision
 
@@ -21,13 +20,14 @@
 '''
 import random
 
-from snake_v5_1_tools import (RED, YELLOW, GREEN, Setup, PlotObject, eye,
-                              randomvector, plot_window, hex_color)
+from snake_v5_2_tools import (RED, YELLOW, GREEN, LWIDTH, Setup,
+                              PlotObject, Tools,)
 
 '''  initialise the configuration paramaters
 '''
-global snake, snake_number
+global snake, snake_number, logger
 setup = Setup()  # window setup is default False
+tools = Tools()
 
 snake = []
 snake_number = 0
@@ -43,15 +43,17 @@ class SnakeObject:
          - view() out vision
          - __repr__
     '''
-    def __init__(self, pos, vect, length, snake_color):
+    def __init__(self, pos, vect, length, snake_color, logger):
         # set the position of head
         self.head = pos
         self.vector = vect
         self.length = length
         self.color = snake_color
+        self.logger = logger
         x = self.head[0]
         y = self.head[1]
-        print('head is:', self.head)
+        self.logger.info(f'==> head: {self.head}, vector: {self.vector}, '
+                         f'color: {self.color}')
 
         # create tail of length (note we start at 0)
         self.tail = []
@@ -59,8 +61,9 @@ class SnakeObject:
             x = (pos[0] - vect[0]) % setup.cells_x
             y = (pos[1] - vect[1]) % setup.cells_y
             self.tail.append((x, y))
-            print(i, vect, self.tail[i])
             vect = (vect[0] + self.vector[0], vect[1] + self.vector[1])
+
+        self.logger.info(f'==> tail: {self.tail}')
 
     def move(self, cell):
         '''  method to move snake straight and update cell status
@@ -71,7 +74,7 @@ class SnakeObject:
         j = (self.head[1] + self.vector[1]) % setup.cells_y
 
         if cell[i][j].content == 'wall':
-            print('unable to move - hit wall')
+            # self.logger.info('==> unable to move - hit wall')
             move = False
 
         else:
@@ -119,7 +122,7 @@ class SnakeObject:
             s = (0, -1)
         elif self.vector == (1, 0):
             s = (1, -1)
-        self.vector = (s[0], s[1])
+        self.vector = s
 
     def move_right(self):
         '''  depending on vector select next position (relative to head)
@@ -141,7 +144,7 @@ class SnakeObject:
             s = (1, 0)
         elif self.vector == (1, 0):
             s = (1, 1)
-        self.vector = (s[0], s[1])
+        self.vector = s
 
     def plot(self, plotlist):
         '''  method to fill the plotlist with snake points to be plotted
@@ -175,37 +178,37 @@ class SnakeObject:
              component vector (LV, FV, RV)
         '''
         if self.vector == (1, 0):
-            LV = eye(self.head, cell, setup.view_field[-1 % 8])
-            FV = eye(self.head, cell, setup.view_field[0 % 8])
-            RV = eye(self.head, cell, setup.view_field[1 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[-1 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[0 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[1 % 8])
         elif self.vector == (1, 1):
-            LV = eye(self.head, cell, setup.view_field[0 % 8])
-            FV = eye(self.head, cell, setup.view_field[1 % 8])
-            RV = eye(self.head, cell, setup.view_field[2 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[0 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[1 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[2 % 8])
         elif self.vector == (0, 1):
-            LV = eye(self.head, cell, setup.view_field[1 % 8])
-            FV = eye(self.head, cell, setup.view_field[2 % 8])
-            RV = eye(self.head, cell, setup.view_field[3 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[1 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[2 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[3 % 8])
         elif self.vector == (-1, 1):
-            LV = eye(self.head, cell, setup.view_field[2 % 8])
-            FV = eye(self.head, cell, setup.view_field[3 % 8])
-            RV = eye(self.head, cell, setup.view_field[4 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[2 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[3 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[4 % 8])
         elif self.vector == (-1, 0):
-            LV = eye(self.head, cell, setup.view_field[3 % 8])
-            FV = eye(self.head, cell, setup.view_field[4 % 8])
-            RV = eye(self.head, cell, setup.view_field[5 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[3 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[4 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[5 % 8])
         elif self.vector == (-1, -1):
-            LV = eye(self.head, cell, setup.view_field[4 % 8])
-            FV = eye(self.head, cell, setup.view_field[5 % 8])
-            RV = eye(self.head, cell, setup.view_field[6 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[4 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[5 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[6 % 8])
         elif self.vector == (0, -1):
-            LV = eye(self.head, cell, setup.view_field[5 % 8])
-            FV = eye(self.head, cell, setup.view_field[6 % 8])
-            RV = eye(self.head, cell, setup.view_field[7 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[5 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[6 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[7 % 8])
         elif self.vector == (1, -1):
-            LV = eye(self.head, cell, setup.view_field[6 % 8])
-            FV = eye(self.head, cell, setup.view_field[7 % 8])
-            RV = eye(self.head, cell, setup.view_field[8 % 8])
+            LV = tools.eye(self.head, cell, setup.view_field[6 % 8])
+            FV = tools.eye(self.head, cell, setup.view_field[7 % 8])
+            RV = tools.eye(self.head, cell, setup.view_field[8 % 8])
         else:
             assert False, "Something wrong here, check code"
 
@@ -291,20 +294,22 @@ def move_randomly(cell, debug_stats):
         else:
             assert False, "something not right here"
 
-        if not snake[i].move(cell):   # if snake is stuck at wall delete it
-            debug_stats[3] += 1
-            delete_snake(i, cell)
-            break
+        # if not snake[i].move(cell):   # if snake is stuck at wall delete it
+        #     debug_stats[3] += 1
+        #     delete_snake(i, cell)
+        #     break
 
-#        if snake[i].move() == False:  # try to sneak a way out
-#            debug_stats[3] += 1
-#            turn = random.randint(0,1)
-#            if turn == 1:
-#                turn = 2
-#            if turn == 0:
-#                snake[i].move_left()
-#            elif turn == 2:
-#                snake[i].move_right()
+        if not snake[i].move(cell):  # try to sneak a way out
+            debug_stats[3] += 1
+            turn = random.randint(0, 1)
+            if turn == 1:
+                turn = 2
+
+            elif turn == 0:
+                snake[i].move_left()
+
+            elif turn == 2:
+                snake[i].move_right()
 
     return debug_stats
 
@@ -314,8 +319,8 @@ def create_snake(grid, cell):
     '''
     global snake_number  # explicitly call on global variable
     length = random.randint(1, setup.snake_length)
-    vector = randomvector()
-    snake.append(SnakeObject(grid, vector, length, YELLOW))
+    vector = tools.randomvector()
+    snake.append(SnakeObject(grid, vector, length, YELLOW, logger))
     snake_number += 1
     snake_selection(reset_selection=True)
 
@@ -329,7 +334,7 @@ def delete_snake(snake_index, cell):
     '''
     global snake_number  # make it explicit use global variables!
     assert snake != [], 'there should be at least one snake to delete it'
-    print('delete snake', snake_index)
+    logger.info(f'==> delete snake: {snake_index}')
 
     '''  reset cell environment
     '''
@@ -365,10 +370,10 @@ def plot_snakes(aw, bcolor):
     plotlist = []
     for i in range(len(snake)):
         snake[i].plot(plotlist)
-    p = plot_window(canvas=aw,
-                    rectangle=setup.r_action_window,
-                    background='', border_color=bcolor,
-                    plotlist=plotlist)
+    p = tools.plot_window(canvas=aw,
+                          rectangle=setup.r_action_window,
+                          background='', border_color=bcolor,
+                          border_width=LWIDTH, plotlist=plotlist)
     return p
 
 
@@ -380,7 +385,7 @@ def reset_snakes(cell):
     try:
         while snake != []:
             delete_snake(0, cell)
-            print('reset')
+            logger.info('==> reset')
     except:  # noqa E722
         pass
 
@@ -421,14 +426,19 @@ def show_snake_vision(aw, cell):
 
     l_v = max(int((6 - vision[0]) * delta_intensity), 0)
     color = (l_v, l_v, l_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=tools.hex_color(color)))
 
     f_v = max(int((6 - vision[1]) * delta_intensity), 0)
     color = (f_v, f_v, f_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=tools.hex_color(color)))
 
     r_v = max(int((6 - vision[2]) * delta_intensity), 0)
     color = (r_v, r_v, r_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=hex_color(color)))
+    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=tools.hex_color(color)))
 
     return vw
+
+
+def snake_pass_logger(plogger):
+    global logger
+    logger = plogger
