@@ -213,8 +213,7 @@ class Setup:
         '''  method to represent the contents of this class
         '''
         s = ''.join('{} = {}\n'.format(k, v) for k, v in cls.__dict__.items())
-        s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.
-             format(self='__class__'))+s
+        s = ('\n{}/{}:\n'.format(cls.__module__, cls.__name__))+s
         return s
 
 
