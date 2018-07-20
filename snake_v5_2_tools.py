@@ -44,158 +44,11 @@ class Setup:
          - read_config
          - __repr__
     '''
-    def __init__(self, set_window=False):
-        '''  set the parameters for windows, font, time
-        '''
-        self.set_window = set_window
-
-        # read the configuration file
-        _pattern_file, _fps, _cells_x, _cells_y, _cell_dim_x, _cell_dim_y \
-            = self.read_config()
-
-        # set the variable from the configuration file
-        self.pattern_file = _pattern_file
-        self.fps = _fps
-        self.cells_x = _cells_x
-        self.cells_y = _cells_y
-        self.cell_dim_x = _cell_dim_x
-        self.cell_dim_y = _cell_dim_y
-
-        #  set window boundaries - abbrevations stand for: a_ [action],
-        #  m_ [monitor], s_ [status]
-        self.a_w_o = (PADDING, PADDING)
-        a_w_x = self.cells_x * self.cell_dim_x
-        a_w_y = self.cells_y * self.cell_dim_y
-        self.r_action_window = (self.a_w_o[0], self.a_w_o[1],
-                                self.a_w_o[0] + a_w_x, self.a_w_o[1] + a_w_y)
-        self.s_w_o = (self.a_w_o[0] + a_w_x - STATUS_X,
-                      self.a_w_o[1] + a_w_y + PADDING)
-        self.t_w_o = (self.a_w_o[0], self.a_w_o[1] + a_w_y + PADDING)
-
-        self.m_dim_x = 2
-        self.m_dim_y = 2
-        m_w_x = self.cells_x * self.m_dim_x + 2*PADDING
-        m_w_y = self.cells_y * self.m_dim_y + 2*PADDING
-        status_y = max(STATUS_Y, 0)
-        self.m_w_o = (PADDING, PADDING)
-        self.r_monitor_window = (self.m_w_o, self.m_w_o[0] + m_w_x - 2*PADDING,
-                                 self.m_w_o[1] + m_w_y - 2*PADDING)
-
-        v_dim_x = 30
-        v_dim_y = 30
-        v_w_o = (self.s_w_o[0] - 3 * (PADDING + v_dim_x), self.s_w_o[1])
-        self.r_v_w = []
-        self.r_v_w.append((v_w_o[0], v_w_o[1],
-                           v_w_o[0] + v_dim_x, v_w_o[1] + v_dim_y))
-
-        self.r_v_w.append((self.r_v_w[0][0] + PADDING + v_dim_x, v_w_o[1],
-                           self.r_v_w[0][0] + PADDING +
-                           2 * v_dim_x, v_w_o[1] + v_dim_y))
-
-        self.r_v_w.append((self.r_v_w[1][0] + PADDING + v_dim_x, v_w_o[1],
-                           self.r_v_w[1][0] + PADDING +
-                           2 * v_dim_x, v_w_o[1] + v_dim_y))
-
-        _bwidth = BWIDTH*16
-        _bheight = 36
-        self.b_w_o = []
-        self.b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), self.s_w_o[1]))
-        self.b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), self.s_w_o[1] +
-                          _bheight))
-        self.b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), self.s_w_o[1] +
-                          _bheight))
-        self.b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), self.s_w_o[1] +
-                          _bheight))
-
-        self.text_x = self.b_w_o[0][0] - 2*PADDING
-
-        _bwidth = BWIDTH*10
-        self.color_buttons = {
-              GREY:
-              (self.b_w_o[0][0] - 5*(PADDING+_bwidth), self.s_w_o[1]),
-              GREEN:
-              (self.b_w_o[0][0] - 4*(PADDING+_bwidth), self.s_w_o[1]),
-              ORANGE:
-              (self.b_w_o[0][0] - 3*(PADDING+_bwidth), self.s_w_o[1]),
-              BLUE:
-              (self.b_w_o[0][0] - 2*(PADDING+_bwidth), self.s_w_o[1]),
-              WHITE:
-              (self.b_w_o[0][0] - 1*(PADDING+_bwidth), self.s_w_o[1])}
-
-        main_x = PADDING * 2 + a_w_x
-        main_y = PADDING * 3 + a_w_y + status_y
-
-        # set windows and root parameters; only do this once controlled
-        # by set_window
-        if self.set_window:
-            logfile = 'snake_v5_2.log'
-            logformat = '%(asctime)s:%(levelname)s:%(message)s'
-            self.logger = set_logger(logfile, logformat, 'DEBUG')
-
-            self.root = Tk()
-            self.root.title("Snakes ...")
-            self.root.geometry(f"{main_x}x{main_y}")
-            self.root.configure(background=tools.hex_color(BLACK))
-
-            self.mroot = Tk()
-            self.mroot.title("Monitor ...")
-            self.mroot.geometry(f"{m_w_x}x{m_w_y}")
-            self.mroot.configure(background=tools.hex_color(WHITE))
-
-            self.aw = Canvas(self.root, width=main_x, height=main_y, bg='grey')
-            self.aw.place(x=0, y=0)
-
-            self.label_SMB = []
-            pause_SMB = ImageTk.PhotoImage(file='data/Pause.png')
-            self.label_SMB.append(Label(self.aw, image=pause_SMB, bg='grey'))
-            self.label_SMB[0].image = pause_SMB
-
-            run_SMB = ImageTk.PhotoImage(file='data/Triangle.png')
-            self.label_SMB.append(Label(self.aw, image=run_SMB, bg='grey'))
-            self.label_SMB[1].image = run_SMB
-
-            self.mw = Canvas(self.mroot, width=m_w_x, height=m_w_y,
-                             bg=tools.hex_color(WHITE))
-            self.mw.pack(fill=BOTH, expand=YES)
-
-        # set some other parameters
-        self.snake_length = 10  # this is the maximum snake length
-        self.wall_v = []
-        self.wall_v.append([(int(0.10*self.cells_x), int(0.10*self.cells_y)),
-                            (int(0.10*self.cells_x), int(0.90*self.cells_y)),
-                            (int(0.80*self.cells_x), int(0.90*self.cells_y)),
-                            (int(0.80*self.cells_x), int(0.40*self.cells_y))])
-        self.wall_v.append([(int(0.25*self.cells_x), int(0.25*self.cells_y)),
-                            (int(0.65*self.cells_x), int(0.25*self.cells_y))])
-        self.brick_size = (int(0.8*self.cell_dim_x), int(0.8*self.cell_dim_y))
-        self.myfont = "Calibri 12"
-
-        # setup view_field
-        self.view_field = []
-        self.view_field.append(((1, 0), (1, 1), (1, -1),
-                                (2, 0), (2, 1), (2, -1)))       # -> E
-        self.view_field.append(((1, 1), (1, 0), (0, 1),
-                                (2, 2), (2, 1), (1, 2)))        # -> SE
-        self.view_field.append(((0, 1), (-1, 1), (1, 1),
-                                (0, 2), (-1, 2), (1, 2)))       # -> S
-        self.view_field.append(((-1, 1), (0, 1), (-1, 0),
-                                (-2, 2), (-1, 2), (-2, 1)))     # -> SW
-        self.view_field.append(((-1, 0), (-1, 1), (-1, -1),
-                                (-2, 0), (-2, 1), (-2, -1)))    # -> W
-        self.view_field.append(((-1, -1), (-1, 0), (0, -1),
-                                (-2, -2), (-2, -1), (-1, -2)))  # -> NW
-        self.view_field.append(((0, -1), (1, -1), (-1, -1),
-                                (0, -2), (1, -2), (-1, -2)))    # -> N
-        self.view_field.append(((1, -1), (0, -1), (1, 0),
-                                (2, -2), (1, -2), (2, -1)))     # -> NE
-
-    def read_config(self):
+    def read_config():
         '''  read config file in 1st argument (otherwise default is
-             data/config.txt). Optionally 2nd argument is pattern file
-             otherwise defined in config file returns values for:
-             pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
+        data/config.txt). Optionally 2nd argument is pattern file
+        otherwise defined in config file returns values for:
+        pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
         '''
         if len(sys.argv) >= 2:
             config_file = sys.argv[1]
@@ -222,12 +75,146 @@ class Setup:
 
         return pattern_file, fps, cells_x, cells_y, cell_dim_x, cell_dim_y
 
-    def __repr__(self):
+    '''  set the parameters
+    '''
+    # read the configuration file
+    _pattern_file, _fps, _cells_x, _cells_y, _cell_dim_x, _cell_dim_y \
+        = read_config()
+
+    # set the variable from the configuration file
+    pattern_file = _pattern_file
+    fps = _fps
+    cells_x = _cells_x
+    cells_y = _cells_y
+    cell_dim_x = _cell_dim_x
+    cell_dim_y = _cell_dim_y
+
+    #  set window boundaries - abbrevations stand for: a_ [action],
+    #  m_ [monitor], s_ [status]
+    a_w_o = (PADDING, PADDING)
+    a_w_x = cells_x * cell_dim_x
+    a_w_y = cells_y * cell_dim_y
+    r_action_window = (a_w_o[0], a_w_o[1],
+                       a_w_o[0] + a_w_x, a_w_o[1] + a_w_y)
+    s_w_o = (a_w_o[0] + a_w_x - STATUS_X,
+             a_w_o[1] + a_w_y + PADDING)
+    t_w_o = (a_w_o[0], a_w_o[1] + a_w_y + PADDING)
+
+    m_dim_x = 2
+    m_dim_y = 2
+    m_w_x = cells_x * m_dim_x + 2*PADDING
+    m_w_y = cells_y * m_dim_y + 2*PADDING
+    status_y = max(STATUS_Y, 0)
+    m_w_o = (PADDING, PADDING)
+    r_monitor_window = (m_w_o, m_w_o[0] + m_w_x - 2*PADDING,
+                        m_w_o[1] + m_w_y - 2*PADDING)
+
+    v_dim_x = 30
+    v_dim_y = 30
+    v_w_o = (s_w_o[0] - 3 * (PADDING + v_dim_x), s_w_o[1])
+    r_v_w = []
+    r_v_w.append((v_w_o[0], v_w_o[1],
+                  v_w_o[0] + v_dim_x, v_w_o[1] + v_dim_y))
+
+    r_v_w.append((r_v_w[0][0] + PADDING + v_dim_x, v_w_o[1],
+                  r_v_w[0][0] + PADDING +
+                  2 * v_dim_x, v_w_o[1] + v_dim_y))
+
+    r_v_w.append((r_v_w[1][0] + PADDING + v_dim_x, v_w_o[1],
+                  r_v_w[1][0] + PADDING +
+                  2 * v_dim_x, v_w_o[1] + v_dim_y))
+
+    _bwidth = BWIDTH*16
+    _bheight = 36
+    b_w_o = []
+    b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), s_w_o[1]))
+    b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), s_w_o[1]))
+    b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), s_w_o[1]))
+    b_w_o.append((v_w_o[0] - 3*(PADDING+_bwidth), s_w_o[1] + _bheight))
+    b_w_o.append((v_w_o[0] - 2*(PADDING+_bwidth), s_w_o[1] + _bheight))
+    b_w_o.append((v_w_o[0] - 1*(PADDING+_bwidth), s_w_o[1] + _bheight))
+
+    text_x = b_w_o[0][0] - 2*PADDING
+
+    _bwidth = BWIDTH*10
+    color_buttons = {
+          GREY: (b_w_o[0][0] - 5*(PADDING+_bwidth), s_w_o[1]),
+          GREEN: (b_w_o[0][0] - 4*(PADDING+_bwidth), s_w_o[1]),
+          ORANGE: (b_w_o[0][0] - 3*(PADDING+_bwidth), s_w_o[1]),
+          BLUE: (b_w_o[0][0] - 2*(PADDING+_bwidth), s_w_o[1]),
+          WHITE: (b_w_o[0][0] - 1*(PADDING+_bwidth), s_w_o[1])}
+
+    main_x = PADDING * 2 + a_w_x
+    main_y = PADDING * 3 + a_w_y + status_y
+
+    # set windows and root parameters; only do this once controlled
+    # by set_window
+    logfile = 'snake_v5_2.log'
+    logformat = '%(asctime)s:%(levelname)s:%(message)s'
+    logger = set_logger(logfile, logformat, 'DEBUG')
+
+    root = Tk()
+    root.title("Snakes ...")
+    root.geometry(f"{main_x}x{main_y}")
+    root.configure(background='black')
+
+    mroot = Tk()
+    mroot.title("Monitor ...")
+    mroot.geometry(f"{m_w_x}x{m_w_y}")
+    mroot.configure(background='white')
+
+    aw = Canvas(root, width=main_x, height=main_y, bg='grey')
+    aw.place(x=0, y=0)
+
+    label_SMB = []
+    pause_SMB = ImageTk.PhotoImage(file='data/Pause.png')
+    label_SMB.append(Label(aw, image=pause_SMB, bg='grey'))
+    label_SMB[0].image = pause_SMB
+
+    run_SMB = ImageTk.PhotoImage(file='data/Triangle.png')
+    label_SMB.append(Label(aw, image=run_SMB, bg='grey'))
+    label_SMB[1].image = run_SMB
+
+    mw = Canvas(mroot, width=m_w_x, height=m_w_y, bg='white')
+    mw.pack(fill=BOTH, expand=YES)
+
+    # set some other parameters
+    snake_length = 10  # this is the maximum snake length
+    wall_v = []
+    wall_v.append([(int(0.10*cells_x), int(0.10*cells_y)),
+                   (int(0.10*cells_x), int(0.90*cells_y)),
+                   (int(0.80*cells_x), int(0.90*cells_y)),
+                   (int(0.80*cells_x), int(0.40*cells_y))])
+    wall_v.append([(int(0.25*cells_x), int(0.25*cells_y)),
+                   (int(0.65*cells_x), int(0.25*cells_y))])
+    brick_size = (int(0.8*cell_dim_x), int(0.8*cell_dim_y))
+    myfont = "Calibri 12"
+
+    # setup view_field
+    view_field = []
+    view_field.append(((1, 0), (1, 1), (1, -1),
+                       (2, 0), (2, 1), (2, -1)))       # -> E
+    view_field.append(((1, 1), (1, 0), (0, 1),
+                       (2, 2), (2, 1), (1, 2)))        # -> SE
+    view_field.append(((0, 1), (-1, 1), (1, 1),
+                       (0, 2), (-1, 2), (1, 2)))       # -> S
+    view_field.append(((-1, 1), (0, 1), (-1, 0),
+                       (-2, 2), (-1, 2), (-2, 1)))     # -> SW
+    view_field.append(((-1, 0), (-1, 1), (-1, -1),
+                       (-2, 0), (-2, 1), (-2, -1)))    # -> W
+    view_field.append(((-1, -1), (-1, 0), (0, -1),
+                       (-2, -2), (-2, -1), (-1, -2)))  # -> NW
+    view_field.append(((0, -1), (1, -1), (-1, -1),
+                       (0, -2), (1, -2), (-1, -2)))    # -> N
+    view_field.append(((1, -1), (0, -1), (1, 0),
+                       (2, -2), (1, -2), (2, -1)))     # -> NE
+
+    def __repr__(cls):
         '''  method to represent the contents of this class
         '''
-        s = ''.join('{} = {}\n'.format(k, v) for k, v in self.__dict__.items())
+        s = ''.join('{} = {}\n'.format(k, v) for k, v in cls.__dict__.items())
         s = ('\n{self.__module__}/{self.__class__.__name__}:\n'.
-             format(self=self))+s
+             format(self='__class__'))+s
         return s
 
 
@@ -304,9 +291,7 @@ class Monitor:
          - clear
          - __repr__
     '''
-    def __init__(self, mroot, mw, cell):
-        self.mroot = mroot
-        self.mw = mw
+    def __init__(self, cell):
         self.cell = cell
 
     def plot(self):
@@ -330,11 +315,12 @@ class Monitor:
                                     shape='rectangle'))
                     self.cell[i][j].plot = False
 
-        m = tools.plot_window(canvas=self.mw, rectangle=setup.r_monitor_window,
+        m = tools.plot_window(canvas=setup.mw,
+                              rectangle=setup.r_monitor_window,
                               background='', border_color=BLACK,
                               border_width=2, plotlist=plotlist)
 
-        self.mroot.update()
+        setup.mroot.update()
         return m
 
     def clear(self, m_counter, monitor_clear):
@@ -342,7 +328,7 @@ class Monitor:
         '''
         m_counter += 1
         if (m_counter % monitor_clear == 0):
-            self.mw.delete("all")
+            setup.mw.delete("all")
             # m_counter = 0
 
             for i in range(setup.cells_x):
@@ -412,18 +398,18 @@ class Tools:
 
         return p
 
-    def plot_status(self, label_SMB, pause_status):
+    def plot_status(self, pause_status):
         '''  display status pause or run
         '''
         if pause_status:
-            label_SMB[0].lift()
-            label_SMB[0].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
+            setup.label_SMB[0].lift()
+            setup.label_SMB[0].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
 
         else:
-            label_SMB[1].lift()
-            label_SMB[1].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
+            setup.label_SMB[1].lift()
+            setup.label_SMB[1].place(x=setup.s_w_o[0], y=setup.s_w_o[1])
 
-    def display_text(self, aw, t_elapsed, snakes, select):
+    def display_text(self, t_elapsed, snakes, select):
         '''  display number snakes and time passed in seconds in status window
              left every 1 s and refresh the windows according to refresh_rate
         '''
@@ -433,8 +419,8 @@ class Tools:
             text = 'Number of snakes: ' + s_num(snakes) + '\n' + \
                    'Selected snake: ' + s_num(select) + '\n' + \
                    'Elapsed time: ' + str(int(t_elapsed/1000)) + ' seconds.'
-            label = Label(aw, text=text, wraplength=setup.text_x, bg='grey',
-                          font=setup.myfont, justify='left')
+            label = Label(setup.aw, text=text, wraplength=setup.text_x,
+                          bg='grey', font=setup.myfont, justify='left')
             label.place(x=setup.t_w_o[0], y=setup.t_w_o[1])
 
     def eye(self, head, cell, a):
@@ -479,5 +465,5 @@ class Tools:
         return s
 
 
-setup = Setup()
+setup = Setup
 tools = Tools()

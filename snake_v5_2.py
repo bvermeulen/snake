@@ -16,14 +16,14 @@ from time import time
 import snake_v5_2_tools    # noqa F401 - required for debugging
 from snake_v5_2_tools import Setup, Monitor, Tools
 import snake_v5_2_wall     # noqa F401 - required for debugging
-from snake_v5_2_wall import init_walls, plot_walls, wall_pass_logger
+from snake_v5_2_wall import init_walls, plot_walls
 
 import snake_v5_2_control  # noqa F401 - required for debugging
 from snake_v5_2_control import Control
 
 import snake_v5_2_snake as sm
 from snake_v5_2_snake import (move_randomly, show_snake_vision,
-                              plot_snakes, reset_snakes, snake_pass_logger)
+                              plot_snakes, reset_snakes)
 
 
 def main():
@@ -33,11 +33,9 @@ def main():
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
-    setup = Setup(set_window=True)
+    setup = Setup
     setup.logger.info('-'*70)
-    setup.logger.info(repr(setup))
-    snake_pass_logger(setup.logger)
-    wall_pass_logger(setup.logger)
+    setup.logger.info(setup.__repr__(setup))
 
     '''  initialise the local variables
     '''
@@ -46,9 +44,8 @@ def main():
     reset_snakes(cell)
 
     debug_stats = [0, 0, 0, 0, 0]
-    cntrl = Control(setup.root, setup.mroot, setup.aw, setup.mw,
-                    cell, setup.logger)
-    monitor = Monitor(setup.mroot, setup.mw, cell)
+    cntrl = Control(cell)
+    monitor = Monitor(cell)
     cntrl.buttons()
     init_walls(cell)
     m_counter = 0
@@ -62,7 +59,7 @@ def main():
              existing ones by clicking the mouse on the action window
              if the program is not paused the snakes move around randomly
         '''
-        plot_walls(setup.aw, cntrl.bcolor, cntrl.setup)
+        plot_walls(cntrl.bcolor, cntrl.setup)
 
         if cntrl.setup:
             '''  if setup wait on user input to setup the walls
@@ -81,21 +78,23 @@ def main():
                 '''
                 debug_stats = move_randomly(cell, debug_stats)
 
-            plot_snakes(setup.aw, cntrl.bcolor)
-            show_snake_vision(setup.aw, cell)
+            plot_snakes(cntrl.bcolor)
+            show_snake_vision(cell)
             if sm.snake_number == 0 and not cntrl.pause:
                 cntrl.pause_status()
 
         '''  update status and text and show the screen
         '''
         time_elapsed = int(1000 * (time() - start_time))
-        tools.plot_status(setup.label_SMB, cntrl.pause)
-        tools.display_text(setup.aw, time_elapsed, sm.snake_number,
+        tools.plot_status(cntrl.pause)
+        tools.display_text(time_elapsed, sm.snake_number,
                            sm.snake_select)
 
         if cntrl.monitor:
             monitor.plot()
             m_counter = monitor.clear(m_counter, monitor_clear)
+            if not cntrl.setup:
+                print(f'counter: {m_counter}', end='\r')
 
         #  update the screen and display at rate fps
         # setup.root.after(int(1000 / setup.fps))

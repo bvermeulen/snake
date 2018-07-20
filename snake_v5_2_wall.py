@@ -20,8 +20,8 @@ from snake_v5_2_tools import (GREY, ORANGE, LIGHTGREY, BLACK, YELLOW, BLUE,
 
 ''' initialise the configuration paramaters
 '''
-global walls, wall_selected, vertex_index, logger
-setup = Setup()  # window setup is default False
+global walls, wall_selected, vertex_index
+setup = Setup
 tools = Tools()
 walls = []
 wall_selected = -1
@@ -119,7 +119,7 @@ class WallObject:
             self.build_bricks(cell)
 
         else:
-            logger.info('==> cannot create 2 vertices at the same place')
+            setup.logger.info('==> cannot create 2 vertices at the same place')
 
     def plot(self, plotlist, wall_setup):
         '''  method to plot the wall
@@ -173,7 +173,7 @@ def cell_update(cell):
          these bricks will then be reinstalled in the environment through
          this method. Needs to be called at each time the walls may be altered.
     '''
-    for wall in walls:
+    for index, wall in enumerate(walls):
         for brick in wall.bricks:
             cell[brick[0]][brick[1]].content = 'wall'
             cell[brick[0]][brick[1]].plot = True
@@ -184,6 +184,7 @@ def init_walls(cell):
     '''
     # walls.append(WallObject(cell, setup.wall_v[0], GREY))
     walls.append(WallObject(cell, setup.wall_v[1], BLUE))
+    clear_wall_selection()
     cell_update(cell)
     return walls
 
@@ -202,7 +203,7 @@ def mouse_action_wall(mouse_event, double_click, cell):
     for index, wall in enumerate(walls):
         if grid in wall.bricks and mouse_event.num == 1 \
            and double_click and wall_selected == -1:
-            logger.info(f'==> wall is selected ...{grid}')
+            setup.logger.info(f'==> wall is selected ...{grid}')
             wall.select_wall(True)
             wall_selected = index
 
@@ -261,7 +262,7 @@ def move_wall_vertex(mouse_event, mouse_released, cell):
     cell_update(cell)
 
 
-def plot_walls(aw, bcolor, wall_setup):
+def plot_walls(bcolor, wall_setup):
     '''  function to plot walls in either setup case or normal
     '''
     plotlist = []
@@ -274,7 +275,7 @@ def plot_walls(aw, bcolor, wall_setup):
     else:
         bgcolor = BLACK
 
-    w = tools.plot_window(canvas=aw, rectangle=setup.r_action_window,
+    w = tools.plot_window(canvas=setup.aw, rectangle=setup.r_action_window,
                           background=bgcolor, border_color=bcolor,
                           border_width=LWIDTH, plotlist=plotlist)
 
@@ -298,11 +299,9 @@ def clear_wall_selection():
     '''  clears the wall snake_selection
     '''
     global wall_selected
-    for wall in walls:
+    for index, wall in enumerate(walls):
         wall.select_wall(False)
+        setup.logger.info(f'==> wall {index}, color {wall.color}, '
+                          f'vertices: {wall.vertices}')
+
     wall_selected = -1
-
-
-def wall_pass_logger(plogger):
-    global logger
-    logger = plogger

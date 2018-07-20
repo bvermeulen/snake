@@ -6,11 +6,12 @@
      - Control
 '''
 from tkinter import Button
-from snake_v5_2_tools import BLUE, ORANGE, NOCOLOR, BWIDTH, Setup, Tools
+from snake_v5_2_tools import (BLUE, ORANGE, NOCOLOR, BWIDTH,
+                              Setup, Tools,)
 from snake_v5_2_snake import mouse_action_snake, reset_snakes, snake_selection
 from snake_v5_2_wall import (mouse_action_wall, move_wall_vertex,
                              set_color_wall, clear_wall_selection)
-setup = Setup()
+setup = Setup
 tools = Tools()
 
 
@@ -29,29 +30,29 @@ class ButtonControl:
     def buttons(self):
         ''' definition and display of buttons
         '''
-        self.logger.info(f'==> button called: {setup.b_w_o}')
+        setup.logger.info(f'==> button called: {setup.b_w_o}')
 
-        self.setup_button = Button(self.root, text='Setup', relief='raised',
+        self.setup_button = Button(setup.root, text='Setup', relief='raised',
                                    width=BWIDTH, command=self.setup_status)
         self.setup_button.place(x=setup.b_w_o[0][0], y=setup.b_w_o[0][1])
         self.setup_button.bind('<Enter>', self.in_button_area)
         self.setup_button.bind('<Leave>', self.out_button_area)
         self.default_button_bg = self.setup_button.cget('background')
 
-        self.pause_button = Button(self.root, text='Pause', relief='sunken',
+        self.pause_button = Button(setup.root, text='Pause', relief='sunken',
                                    width=BWIDTH, command=self.pause_status,
                                    bg=self.select_color)
         self.pause_button.place(x=setup.b_w_o[1][0], y=setup.b_w_o[1][1])
         self.pause_button.bind('<Enter>', self.in_button_area)
         self.pause_button.bind('<Leave>', self.out_button_area)
 
-        self.clear_button = Button(self.root, text='Clear', relief='raised',
+        self.clear_button = Button(setup.root, text='Clear', relief='raised',
                                    width=BWIDTH, command=self.clear_status)
         self.clear_button.place(x=setup.b_w_o[2][0], y=setup.b_w_o[2][1])
         self.clear_button.bind('<Enter>', self.in_button_area)
         self.clear_button.bind('<Leave>', self.out_button_area)
 
-        self.monitor_button = Button(self.root, text='Monitor',
+        self.monitor_button = Button(setup.root, text='Monitor',
                                      relief='sunken', width=BWIDTH,
                                      command=self.monitor_status,
                                      bg=self.select_color)
@@ -59,13 +60,13 @@ class ButtonControl:
         self.monitor_button.bind('<Enter>', self.in_button_area)
         self.monitor_button.bind('<Leave>', self.out_button_area)
 
-        self.select_button = Button(self.root, text='Select', relief='raised',
+        self.select_button = Button(setup.root, text='Select', relief='raised',
                                     width=BWIDTH, command=self.select_status)
         self.select_button.place(x=setup.b_w_o[4][0], y=setup.b_w_o[4][1])
         self.select_button.bind('<Enter>', self.in_button_area)
         self.select_button.bind('<Leave>', self.out_button_area)
 
-        self.exit_button = Button(self.root, text='Exit', relief='raised',
+        self.exit_button = Button(setup.root, text='Exit', relief='raised',
                                   width=BWIDTH, command=self.exit_program)
         self.exit_button.place(x=setup.b_w_o[5][0], y=setup.b_w_o[5][1])
         self.exit_button.bind('<Enter>', self.in_button_area)
@@ -87,7 +88,7 @@ class ButtonControl:
         self.color_button = {}
         for color in setup.color_buttons:
             self.color_button[color] =\
-                 Button(self.root,
+                 Button(setup.root,
                         bg=tools.hex_color(color),
                         activebackground=tools.hex_color(color),
                         borderwidth=2,
@@ -143,17 +144,17 @@ class MouseControl:
           - __repr__
     '''
     def __init__(self):
-        self.aw.bind('<Button>', self.clicked)
-        self.aw.bind('<Double-Button>', self.double_click)
-        self.aw.bind('<ButtonRelease>', self.button_released)
-        self.aw.bind('<B1-Motion>', self.moved)
+        setup.aw.bind('<Button>', self.clicked)
+        setup.aw.bind('<Double-Button>', self.double_click)
+        setup.aw.bind('<ButtonRelease>', self.button_released)
+        setup.aw.bind('<B1-Motion>', self.moved)
 
     def clicked(self, event):
         '''  add a little delay before calling action to allow for double click
              and button released to have occurred
         '''
         self.double_click_flag = self.button_released_flag = False
-        self.aw.after(250, self.action, event)
+        setup.aw.after(250, self.action, event)
 
     def double_click(self, event):
         '''  set flag when there is a double click '''
@@ -212,9 +213,9 @@ class KeyControl:
         - __repr__
     '''
     def __init__(self):
-        self.root.bind('<Key>', self.key_action)
-        self.root.protocol('WM_DELETE_WINDOW', self.exit_program)
-        self.mroot.protocol('WM_DELETE_WINDOW', self.exit_program)
+        setup.root.bind('<Key>', self.key_action)
+        setup.root.protocol('WM_DELETE_WINDOW', self.exit_program)
+        setup.mroot.protocol('WM_DELETE_WINDOW', self.exit_program)
 
     def key_action(self, event):
         '''  function to determine action on key events
@@ -273,7 +274,7 @@ class Control(MouseControl, ButtonControl, KeyControl):
          -   exit_program
          -   __repr__
     '''
-    def __init__(self, root, mroot, aw, mw, cell, logger):
+    def __init__(self, cell):
         self.run = True
         self.pause = True
         self.left = False
@@ -283,13 +284,8 @@ class Control(MouseControl, ButtonControl, KeyControl):
         self.in_button = False
         self.select_color = 'yellow'
         self.setup = False
-        self.root = root
-        self.mroot = mroot
-        self.aw = aw
-        self.mw = mw
         self.cell = cell
         self.color = NOCOLOR
-        self.logger = logger
         MouseControl.__init__(self)
         KeyControl.__init__(self)
 

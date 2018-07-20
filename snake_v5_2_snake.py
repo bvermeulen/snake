@@ -25,8 +25,8 @@ from snake_v5_2_tools import (RED, YELLOW, GREEN, LWIDTH, Setup,
 
 '''  initialise the configuration paramaters
 '''
-global snake, snake_number, logger
-setup = Setup()  # window setup is default False
+global snake, snake_number
+setup = Setup
 tools = Tools()
 
 snake = []
@@ -43,17 +43,16 @@ class SnakeObject:
          - view() out vision
          - __repr__
     '''
-    def __init__(self, pos, vect, length, snake_color, logger):
+    def __init__(self, pos, vect, length, snake_color):
         # set the position of head
         self.head = pos
         self.vector = vect
         self.length = length
         self.color = snake_color
-        self.logger = logger
         x = self.head[0]
         y = self.head[1]
-        self.logger.info(f'==> head: {self.head}, vector: {self.vector}, '
-                         f'color: {self.color}')
+        setup.logger.info(f'==> head: {self.head}, vector: {self.vector}, '
+                          f'color: {self.color}')
 
         # create tail of length (note we start at 0)
         self.tail = []
@@ -63,7 +62,7 @@ class SnakeObject:
             self.tail.append((x, y))
             vect = (vect[0] + self.vector[0], vect[1] + self.vector[1])
 
-        self.logger.info(f'==> tail: {self.tail}')
+        setup.logger.info(f'==> tail: {self.tail}')
 
     def move(self, cell):
         '''  method to move snake straight and update cell status
@@ -74,19 +73,19 @@ class SnakeObject:
         j = (self.head[1] + self.vector[1]) % setup.cells_y
 
         if cell[i][j].content == 'wall':
-            # self.logger.info('==> unable to move - hit wall')
+            # setup.logger.info('==> unable to move - hit wall')
             move = False
 
         else:
             # update environment: previous last tail element to 'empty' unless
             # this  is a wall
-            if cell[self.tail[self.length - 1][0]][self.tail[self.length - 1]
-                                                   [1]].content != 'wall':
+            if cell[self.tail[self.length-1][0]][self.tail[self.length - 1]
+                                                 [1]].content != 'wall':
 
-                cell[self.tail[self.length - 1][0]][self.tail[self.length - 1]
-                                                    [1]].content = 'empty'
-                cell[self.tail[self.length - 1][0]][self.tail[self.length - 1]
-                                                    [1]].plot = True
+                cell[self.tail[self.length-1][0]][self.tail[self.length - 1]
+                                                  [1]].content = 'empty'
+                cell[self.tail[self.length-1][0]][self.tail[self.length - 1]
+                                                  [1]].plot = True
 
             # move up the snake towards the head, start at the end
             for k in range(self.length - 1, 0, -1):
@@ -320,7 +319,7 @@ def create_snake(grid, cell):
     global snake_number  # explicitly call on global variable
     length = random.randint(1, setup.snake_length)
     vector = tools.randomvector()
-    snake.append(SnakeObject(grid, vector, length, YELLOW, logger))
+    snake.append(SnakeObject(grid, vector, length, YELLOW))
     snake_number += 1
     snake_selection(reset_selection=True)
 
@@ -334,7 +333,7 @@ def delete_snake(snake_index, cell):
     '''
     global snake_number  # make it explicit use global variables!
     assert snake != [], 'there should be at least one snake to delete it'
-    logger.info(f'==> delete snake: {snake_index}')
+    setup.logger.info(f'==> delete snake: {snake_index}')
 
     '''  reset cell environment
     '''
@@ -364,13 +363,13 @@ def set_snake_environment(cell, snake_index, content):
             cell[tail[i][0]][tail[i][1]].plot = True
 
 
-def plot_snakes(aw, bcolor):
+def plot_snakes(bcolor):
     '''  plot the snakes
     '''
     plotlist = []
     for i in range(len(snake)):
         snake[i].plot(plotlist)
-    p = tools.plot_window(canvas=aw,
+    p = tools.plot_window(canvas=setup.aw,
                           rectangle=setup.r_action_window,
                           background='', border_color=bcolor,
                           border_width=LWIDTH, plotlist=plotlist)
@@ -385,7 +384,7 @@ def reset_snakes(cell):
     try:
         while snake != []:
             delete_snake(0, cell)
-            logger.info('==> reset')
+            setup.logger.info('==> reset')
     except:  # noqa E722
         pass
 
@@ -412,7 +411,7 @@ def snake_selection(reset_selection=False):
             snake[snake_select - 1].color = GREEN
 
 
-def show_snake_vision(aw, cell):
+def show_snake_vision(cell):
     '''  show the vision of snake[snake_nr]
     '''
     if snake_select in range(1, snake_number + 1):
@@ -426,19 +425,17 @@ def show_snake_vision(aw, cell):
 
     l_v = max(int((6 - vision[0]) * delta_intensity), 0)
     color = (l_v, l_v, l_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[0], fill=tools.hex_color(color)))
+    vw.append(setup.aw.create_rectangle(setup.r_v_w[0],
+              fill=tools.hex_color(color)))
 
     f_v = max(int((6 - vision[1]) * delta_intensity), 0)
     color = (f_v, f_v, f_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[1], fill=tools.hex_color(color)))
+    vw.append(setup.aw.create_rectangle(setup.r_v_w[1],
+              fill=tools.hex_color(color)))
 
     r_v = max(int((6 - vision[2]) * delta_intensity), 0)
     color = (r_v, r_v, r_v)
-    vw.append(aw.create_rectangle(setup.r_v_w[2], fill=tools.hex_color(color)))
+    vw.append(setup.aw.create_rectangle(setup.r_v_w[2],
+              fill=tools.hex_color(color)))
 
     return vw
-
-
-def snake_pass_logger(plogger):
-    global logger
-    logger = plogger
