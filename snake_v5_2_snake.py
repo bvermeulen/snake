@@ -20,15 +20,14 @@
 '''
 import random
 
-from snake_v5_2_tools import (RED, YELLOW, GREEN, LWIDTH, Setup,
+from snake_v5_2_tools import (aw, logger, RED, YELLOW, GREEN, LWIDTH, Setup,
                               PlotObject, Tools,)
 
 '''  initialise the configuration paramaters
 '''
 global snake, snake_number
-setup = Setup
+setup = Setup()
 tools = Tools()
-
 snake = []
 snake_number = 0
 
@@ -51,8 +50,8 @@ class SnakeObject:
         self.color = snake_color
         x = self.head[0]
         y = self.head[1]
-        setup.logger.info(f'==> head: {self.head}, vector: {self.vector}, '
-                          f'color: {self.color}')
+        logger.info(f'==> snake head: {self.head}, vector: {self.vector}, '
+                    f'color: {self.color}')
 
         # create tail of length (note we start at 0)
         self.tail = []
@@ -62,7 +61,7 @@ class SnakeObject:
             self.tail.append((x, y))
             vect = (vect[0] + self.vector[0], vect[1] + self.vector[1])
 
-        setup.logger.info(f'==> tail: {self.tail}')
+        logger.info(f'==> tail: {self.tail}')
 
     def move(self, cell):
         '''  method to move snake straight and update cell status
@@ -73,7 +72,7 @@ class SnakeObject:
         j = (self.head[1] + self.vector[1]) % setup.cells_y
 
         if cell[i][j].content == 'wall':
-            # setup.logger.info('==> unable to move - hit wall')
+            # logger.info('==> unable to move - hit wall')
             move = False
 
         else:
@@ -333,7 +332,7 @@ def delete_snake(snake_index, cell):
     '''
     global snake_number  # make it explicit use global variables!
     assert snake != [], 'there should be at least one snake to delete it'
-    setup.logger.info(f'==> delete snake: {snake_index}')
+    logger.info(f'==> delete snake: {snake_index}')
 
     '''  reset cell environment
     '''
@@ -369,7 +368,7 @@ def plot_snakes(bcolor):
     plotlist = []
     for i in range(len(snake)):
         snake[i].plot(plotlist)
-    p = tools.plot_window(canvas=setup.aw,
+    p = tools.plot_window(canvas=aw,
                           rectangle=setup.r_action_window,
                           background='', border_color=bcolor,
                           border_width=LWIDTH, plotlist=plotlist)
@@ -384,7 +383,7 @@ def reset_snakes(cell):
     try:
         while snake != []:
             delete_snake(0, cell)
-            setup.logger.info('==> reset')
+            # setup.logger.info('==> reset')
     except:  # noqa E722
         pass
 
@@ -425,17 +424,17 @@ def show_snake_vision(cell):
 
     l_v = max(int((6 - vision[0]) * delta_intensity), 0)
     color = (l_v, l_v, l_v)
-    vw.append(setup.aw.create_rectangle(setup.r_v_w[0],
+    vw.append(aw.create_rectangle(setup.r_v_w[0],
               fill=tools.hex_color(color)))
 
     f_v = max(int((6 - vision[1]) * delta_intensity), 0)
     color = (f_v, f_v, f_v)
-    vw.append(setup.aw.create_rectangle(setup.r_v_w[1],
+    vw.append(aw.create_rectangle(setup.r_v_w[1],
               fill=tools.hex_color(color)))
 
     r_v = max(int((6 - vision[2]) * delta_intensity), 0)
     color = (r_v, r_v, r_v)
-    vw.append(setup.aw.create_rectangle(setup.r_v_w[2],
+    vw.append(aw.create_rectangle(setup.r_v_w[2],
               fill=tools.hex_color(color)))
 
     return vw

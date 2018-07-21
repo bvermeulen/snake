@@ -14,7 +14,8 @@
 '''
 from time import time
 import snake_v5_2_tools    # noqa F401 - required for debugging
-from snake_v5_2_tools import Setup, Monitor, Tools
+from snake_v5_2_tools import (root, mroot, logger, aw, Setup, Monitor,
+                              Tools,)
 import snake_v5_2_wall     # noqa F401 - required for debugging
 from snake_v5_2_wall import init_walls, plot_walls
 
@@ -33,9 +34,10 @@ def main():
     # set to global to have access at interrupt
     '''  initialise the snake set up paramaters
     '''
-    setup = Setup
-    setup.logger.info('-'*70)
-    setup.logger.info(setup.__repr__(setup))
+    setup = Setup()
+    setup.set_tkinter()
+    logger.info('-'*70)
+    logger.info(repr(setup))
 
     '''  initialise the local variables
     '''
@@ -98,13 +100,13 @@ def main():
 
         #  update the screen and display at rate fps
         # setup.root.after(int(1000 / setup.fps))
-        setup.root.update()
-        setup.aw.delete("all")
+        root.update()
+        aw.delete("all")
 
-    setup.root.destroy()
-    setup.mroot.destroy()
+    root.destroy()
+    mroot.destroy()
     debug_stats[4] = int(time_elapsed / 1000)
-    setup.logger.info(f'==> debug_stats: {debug_stats}')
+    logger.info(f'==> debug_stats: {debug_stats}')
 
     return setup, cntrl, monitor, debug_stats, cell, time_elapsed
 

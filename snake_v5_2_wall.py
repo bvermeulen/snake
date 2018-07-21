@@ -15,13 +15,14 @@
         Author: Bruno Vermeulen
         bruno_vermeulen2001@yahoo.com
 '''
-from snake_v5_2_tools import (GREY, ORANGE, LIGHTGREY, BLACK, YELLOW, BLUE,
-                              GREEN, LWIDTH, Setup, PlotObject, Tools)
+from snake_v5_2_tools import (aw, logger, GREY, ORANGE, LIGHTGREY, BLACK,
+                              YELLOW, BLUE, GREEN, LWIDTH, Setup, PlotObject,
+                              Tools)
 
 ''' initialise the configuration paramaters
 '''
 global walls, wall_selected, vertex_index
-setup = Setup
+setup = Setup()
 tools = Tools()
 walls = []
 wall_selected = -1
@@ -76,7 +77,8 @@ class WallObject:
                         j = a_y + round(step / steps * range_y)
                         self.bricks.append((i, j))
                     except ZeroDivisionError:
-                        print(f'Zero division error, step is: {steps}',
+                        print(f'Zero division error, '
+                              f'step is: {steps}             ',
                               end='\r')
 
     def remove_bricks(self, cell):
@@ -119,7 +121,7 @@ class WallObject:
             self.build_bricks(cell)
 
         else:
-            setup.logger.info('==> cannot create 2 vertices at the same place')
+            logger.info('==> cannot create 2 vertices at the same place')
 
     def plot(self, plotlist, wall_setup):
         '''  method to plot the wall
@@ -203,7 +205,7 @@ def mouse_action_wall(mouse_event, double_click, cell):
     for index, wall in enumerate(walls):
         if grid in wall.bricks and mouse_event.num == 1 \
            and double_click and wall_selected == -1:
-            setup.logger.info(f'==> wall is selected ...{grid}')
+            logger.info(f'==> wall is selected ...{grid}')
             wall.select_wall(True)
             wall_selected = index
 
@@ -242,7 +244,7 @@ def move_wall_vertex(mouse_event, mouse_released, cell):
             int((mouse_event.y - setup.a_w_o[1]) / setup.cell_dim_y))
     grid_inside = (grid[0] < setup.cells_x and grid[0] >= 0) and \
                   (grid[1] < setup.cells_y and grid[1] >= 0)
-    print('{} mouse position is at ({:03}. {:03})'.
+    print('{} mouse position is at ({:04}, {:04})    '.
           format(mouse_released, mouse_event.x, mouse_event.y),
           end='\r')
 
@@ -275,7 +277,7 @@ def plot_walls(bcolor, wall_setup):
     else:
         bgcolor = BLACK
 
-    w = tools.plot_window(canvas=setup.aw, rectangle=setup.r_action_window,
+    w = tools.plot_window(canvas=aw, rectangle=setup.r_action_window,
                           background=bgcolor, border_color=bcolor,
                           border_width=LWIDTH, plotlist=plotlist)
 
@@ -301,7 +303,8 @@ def clear_wall_selection():
     global wall_selected
     for index, wall in enumerate(walls):
         wall.select_wall(False)
-        setup.logger.info(f'==> wall {index}, color {wall.color}, '
-                          f'vertices: {wall.vertices}')
+        logger.info(f'==> wall {index}, color {wall.color}, '
+                    f'vertices: {wall.vertices}')
 
     wall_selected = -1
+    print(' '*40, end='\r')
